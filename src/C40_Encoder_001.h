@@ -61,7 +61,7 @@ void C40_init(){
     Serial.println("Use action button to switch encoder modes");
 }
 
-void g_C40_run(){
+void C40_run(){
     // Simply do nothing here, all button events are processed asynchronously
     delay(1000);
 }
