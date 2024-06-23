@@ -151,7 +151,7 @@ void C30_cursor_control(event_t e, const EventMsg* m){
             break;
         // any button's longpress event will cycle menu level 0->1->2->3->0
         case event_t::longPress :
-            menu_toggle();
+            C30_menu_toggle();
             break;
     }
 };
@@ -165,7 +165,7 @@ void C30_volume_control(event_t e, const EventMsg* m){
             break;
         // any button longpress event will cycle menu level 0->1->2->0
         case event_t::longPress :
-            menu_toggle();
+            C30_menu_toggle();
             break;
     }
 };
@@ -195,12 +195,12 @@ void C30_counters(event_t e, const EventMsg* m){
         Serial.println("Click 5 times to exit to menu level 0");
         // toggle menu on 5th click
         if (m->cntr == 4){
-            b2.enableEvent(event_t::autoRepeat);
+            g_C30_b2.enableEvent(event_t::autoRepeat);
             Serial.println("Button 2 autorepeats enabled, try it");
         }
 
         if (m->cntr == 5)
-            menu_toggle();
+            C30_menu_toggle();
         break;
     }
 
