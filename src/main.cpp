@@ -33,6 +33,25 @@
 	#include "B70_PZEM_CLI_002.h"
 #endif
 
+#define			C010		//  
+#ifdef		C010
+	#include "C10_ESP_AsyncEvent_Button_001.h"
+#endif
+
+#define			C020		//  
+#ifdef		C020
+	#include "C20_BasicEvent_001.h"
+#endif
+
+#define			C030		//  
+#ifdef		C030
+	#include "C30_callbackMenu_001.h"
+#endif
+
+#define			C040		//  
+#ifdef		C040
+	#include "C40_Encoder_001.h"
+#endif
 
 void setup() {
 
@@ -59,11 +78,26 @@ void setup() {
 		B50_PZEM_Init();
 	#endif
 
-
 	#ifdef	B070
 		B70_PZEM_CLI_init();
 	#endif
 
+    #ifdef	C010
+		C10_init();
+	#endif
+
+	#ifdef	C020
+		C20_init();
+	#endif
+
+	#ifdef	C030
+		C30_init();
+	#endif
+
+	#ifdef	C040
+		C40_init();
+	#endif
+	
 }
 
 void loop() {
@@ -78,7 +112,6 @@ void loop() {
 
 	#endif
 
-
 	#ifdef B050
 		B50_PZEM_run();
 	#endif
@@ -86,5 +119,19 @@ void loop() {
 	#ifdef	B070
 		B70_PZEM_CLI_run();
 	#endif
+
+	#ifdef	C010
+		C10_run();
+	#endif
+	#ifdef	C020
+		C20_run();
+	#endif
+	#ifdef	C030
+		C30_run();
+	#endif
+	#ifdef	C040
+		C40_run();
+	#endif
+	
 }
 
