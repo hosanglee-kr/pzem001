@@ -1,24 +1,12 @@
-/*
-PZEM EDL - PZEM Event Driven Library
-
-This code implements communication and data exchange with PZEM004T V3.0 module using MODBUS proto
-and provides an API for energy metrics monitoring and data processing.
-
-This file is part of the 'PZEM event-driven library' project.
-
-Copyright (C) Emil Muratov, 2021
-GitHub: https://github.com/vortigont/pzem-edl
-*/
+// https://github.com/vortigont/pzem-edl
 
 #include <Arduino.h>
 
 #include "pzem_edl.hpp"
 
 void B21_PZEM_rx_callback(uint8_t p_pzem_client_id, const RX_msg* p_pzem_rx_msg);
-//void B21_PZEM_rx_callback(uint8_t id, const RX_msg* m);
 
 using namespace pzmbus;	 // Use generic PZEM namespace
-
 
 	// This is a small sketch that shows how to run multiple PZEM004 instances over a single serial port:
 
@@ -44,7 +32,6 @@ using namespace pzmbus;	 // Use generic PZEM namespace
 PZPool* 	g_B21_PZEM_Pools;
 
 
-
 ///////////////// PZEM Port
 
 #define G_B21_PZEM_PORT1_UART 			UART_NUM_1	 		// port attached to pzem (UART_NUM_1 is 2-nd uart port on ESP32, 1-st one is usually busy with USB-to-serial chip)
@@ -53,8 +40,8 @@ PZPool* 	g_B21_PZEM_Pools;
 #define G_B21_PZEM_PORT1_DESC			"Phase_lines"	 	// an ID for port instance
 
 
-#define G_B21_PZEM_PORT1_PIN_RX			22	 			// custom RX pin number
-#define G_B21_PZEM_PORT1_PIN_TX			19	 			// custom TX pin number
+#define G_B21_PZEM_PORT1_PIN_RX			22	 				// custom RX pin number
+#define G_B21_PZEM_PORT1_PIN_TX			19	 				// custom TX pin number
 
 
 void B21_PZEM_Port_init(){
@@ -72,7 +59,7 @@ void B21_PZEM_Port_init(){
 	// it will automatically start event queues for the port and makes it available for PZEM assignment
 	if (g_B21_PZEM_Pools->addPort(
 										G_B21_PZEM_PORT1_ID,	   		// some unique port id
-										v_pzem_port1_cfg,	   	// uart config struct
+										v_pzem_port1_cfg,	   			// uart config struct
 										G_B21_PZEM_PORT1_DESC
 									)  // mnemonic name for the port (optional)
 	) {
@@ -83,39 +70,27 @@ void B21_PZEM_Port_init(){
 }
 
 
-////////////////////////// PZEM Client - Start
-
-// #define PZEM_ID_1		 			42	 			// this is a unique PZEM ID just for reference, it is NOT slave MODBUS address, just some random id
-// #define PZEM_ID_2		 			43	 				// (we all know why '42' is THE number, right? :) )
-// #define PZEM_ID_3		 			44
-
-// // those are PZEM modbus addresses, must be programmed into PZEM in advance! (use pzem_cli tool to do this - https://github.com/vortigont/pzem-edl/tree/main/examples/pzem_cli)
-// #define PZEM_1_ADDR		 10
-// #define PZEM_2_ADDR		 11
-// #define PZEM_3_ADDR		 12
-
-// #define PZEM_1_DESCR	 "Phase_1"
-// #define PZEM_2_DESCR	 "Phase_2"
-// #define PZEM_3_DESCR	 "Phase_3"
-
-
 
 typedef struct {
 	uint8_t 	id;
 	uint8_t 	addr;
 	char		desc[10];
-} PZEM_Client_ST;
+} T_B21_PZEM_Client_ST;
 
 
 
-#define						G_B21_PZEM_CLIENT_CNT	3
-static	PZEM_Client_ST		g_B21_PZEM_Clients[G_B21_PZEM_CLIENT_CNT];
+#define								G_B21_PZEM_CLIENT_CNT	3
+static	T_B21_PZEM_Client_ST		g_B21_PZEM_Clients[G_B21_PZEM_CLIENT_CNT];
 
 
 int B21_PZEM_Client_init(){
+	////////////////////////// PZEM Client - Start
 
-	g_B21_PZEM_Clients[0].id 				= 42;
-	g_B21_PZEM_Clients[0].addr 				= 10;
+	g_B21_PZEM_Clients[0].id 				= 42;			// this is a unique PZEM ID just for reference, it is NOT slave MODBUS address, just some random id
+															// (we all know why '42' is THE number, right? :) )
+	g_B21_PZEM_Clients[0].addr 				= 10;			// those are PZEM modbus addresses,
+															// must be programmed into PZEM in advance!
+															// (use pzem_cli tool to do this - https://github.com/vortigont/pzem-edl/tree/main/examples/pzem_cli)
 	strcpy(g_B21_PZEM_Clients[0].desc		, "Phase_1\0");
 
 	g_B21_PZEM_Clients[1].id 				= 43;
@@ -127,14 +102,14 @@ int B21_PZEM_Client_init(){
 	strcpy(g_B21_PZEM_Clients[2].desc		, "Phase_3\0");
 
 
-	/* Now, we create PZEM instances one by one attaching it to the corresponding Port IDs
-		each PZEM instance must have:
-		- unique ID within a pool
-		- unique modbus address per port, different ports are allowed to have PZEM's with same address
-		- an existing port id to attach to
-	*/
-	// port_1 devs
+	// Now, we create PZEM instances one by one attaching it to the corresponding Port IDs
+	// 	each PZEM instance must have:
+	// 	- unique ID within a pool
+	// 	- unique modbus address per port, different ports are allowed to have PZEM's with same address
+	// 	- an existing port id to attach to
 
+
+	// port_1 devs
 	for (uint8_t i=0; i<G_B21_PZEM_CLIENT_CNT; i++ ){
 		if (g_B21_PZEM_Pools->addPZEM(
 												  G_B21_PZEM_PORT1_ID
@@ -144,36 +119,18 @@ int B21_PZEM_Client_init(){
 												, g_B21_PZEM_Clients[i].desc
 											)
 												){
-				Serial.printf("Added PZEM Client id:%d, name:%s, modbus addr:%d, port id:%d\n", g_B21_PZEM_Clients[i].id, g_B21_PZEM_Clients[i].desc, g_B21_PZEM_Clients[i].addr, G_B21_PZEM_PORT1_UART);
+				Serial.printf("Added PZEM Client id:%d, name:%s, modbus addr:%d, port id:%d\n"
+									, g_B21_PZEM_Clients[i].id
+									, g_B21_PZEM_Clients[i].desc
+									, g_B21_PZEM_Clients[i].addr
+									, G_B21_PZEM_PORT1_UART
+							);
 			}
 	}
-	// if (g_B21_PZEM_Pools->addPZEM(
-	// 									  G_B21_PZEM_PORT1_ID
-	// 									, PZEM_ID_1
-	// 									, PZEM_1_ADDR
-	// 									, pzmodel_t::pzem004v3
-	// 									, PZEM_1_DESCR
-	// 								)
-	// 									){
-	// 	Serial.printf("Added PZEM id:%d addr:%d, port id:%d\n", PZEM_ID_1, PZEM_1_ADDR, G_B21_PZEM_PORT1_UART);
-	// }
-
-	// if (g_B21_PZEM_Pools->addPZEM(G_B21_PZEM_PORT1_ID, PZEM_ID_2, PZEM_2_ADDR, pzmodel_t::pzem004v3, PZEM_2_DESCR)){
-	// 	Serial.printf("Added PZEM id:%d addr:%d, port id:%d\n", PZEM_ID_2, PZEM_2_ADDR, G_B21_PZEM_PORT1_UART);
-	// }
-
-	// if (g_B21_PZEM_Pools->addPZEM(G_B21_PZEM_PORT1_ID, PZEM_ID_3, PZEM_3_ADDR, pzmodel_t::pzem004v3, PZEM_3_DESCR)){
-	// 	Serial.printf("Added PZEM id:%d addr:%d, port id:%d\n", PZEM_ID_3, PZEM_3_ADDR, G_B21_PZEM_PORT1_UART);
-	// }
 
 	return 0;
 	//printPerson(&arr[i]);
 }
-
-
-
-
-
 
 
 
@@ -196,20 +153,12 @@ void B21_PZEM_get_Meters_single(){
 		const auto* v_PZEM_Meter = (const pz004::metrics*)g_B21_PZEM_Pools->getMetrics(g_B21_PZEM_Clients[i].id);
 
 		if (v_PZEM_Meter) {	 // sanity check - make sure that a requested PZEM ID is valid and we have a real struct reference
-			// Serial.printf("Power value for '%s' is %f watts\n"
-			// 												, g_B21_PZEM_Pools->getDescr(g_B21_PZEM_Clients[i].id)
-			// 												, v_PZEM_Meter->asFloat(meter_t::pwr)
-			// 			);
 
 			Serial.printf("Packet with metrics data------------\n");
 
 			Serial.printf("PZEM Client ID:\t%d, \t Name: %s\n"		, g_B21_PZEM_Clients[i].id	, g_B21_PZEM_Pools->getDescr(g_B21_PZEM_Clients[i].id));
 
-
-
 			Serial.printf("PZEM data has been updated %lld ms ago\n", g_B21_PZEM_Pools->getState(g_B21_PZEM_Clients[i].id)->dataAge() );
-			//Serial.printf("PZEM data has been updated %lld ms ago\n", g_B21_PZEM_Pools->getState(g_B21_PZEM_Clients[i].id)-> );
-
 
 			Serial.printf("Voltage:\t%d dV\t~ %.1f volts\n"			, v_PZEM_Meter->voltage	, v_PZEM_Meter->asFloat(meter_t::vol));
 			Serial.printf("Current:\t%u mA\t~ %.3f amperes\n"		, v_PZEM_Meter->current	, v_PZEM_Meter->asFloat(meter_t::cur));
@@ -219,27 +168,7 @@ void B21_PZEM_get_Meters_single(){
 			Serial.printf("Power factor:\t%d/100\t~ %.2f\n"			, v_PZEM_Meter->pf		, v_PZEM_Meter->asFloat(meter_t::pf));
 			Serial.printf("Power Alarm:\t%s\n"						, v_PZEM_Meter->alarm ? "Yes":"No");
 
-			// Serial.printf("Voltage:\t%d dV\t~ %.1f volts\n", pz.data.voltage, pz.data.asFloat(meter_t::vol));
-			// Serial.printf("Current:\t%u mA\t~ %.3f amperes\n", pz.data.current, pz.data.asFloat(meter_t::cur));
-			// Serial.printf("Power:\t\t%u dW\t~ %.1f watts\n", pz.data.power, pz.data.asFloat(meter_t::pwr));
-			// Serial.printf("Energy:\t\t%u Wh\t~ %.3f kWatt*hours\n", pz.data.energy, pz.data.asFloat(meter_t::enrg)/1000 );
-			// Serial.printf("Frequency:\t%d dHz\t~ %.1f Herz\n", pz.data.freq, pz.data.asFloat(meter_t::frq));
-			// Serial.printf("Power factor:\t%d/100\t~ %.2f\n", pz.data.pf, pz.data.asFloat(meter_t::pf));
-			// Serial.printf("Power Alarm:\t%s\n", pz.data.alarm ? "Yes":"No");
-
 		}
-
-
-
-
-			// uint16_t voltage=0;
-			// uint32_t current=0;
-			// uint32_t power=0;
-			// uint32_t energy=0;
-			// uint16_t freq=0;
-			// uint16_t pf=0;
-			// uint16_t alarm=0;
-
 	}
 
 }
@@ -264,6 +193,11 @@ int B21_PZEM_set_AutoPollConfig(uint8_t p_autopoll_enable, size_t p_autopoll_rat
 			Serial.print( " ms");
 			Serial.println();
 
+			//	just as an example so not to flood console let's change poll period to a lesser rate
+			//	Normally you should not do this, better to always have fresh data and access it on demand
+
+			// g_B21_PZEM_Pools->setPollrate(5000);  // 5 sec
+
 			return 1;
 		} else {
 
@@ -281,38 +215,12 @@ int B21_PZEM_set_AutoPollConfig(uint8_t p_autopoll_enable, size_t p_autopoll_rat
 		}
 	}
 
-	// //    Run autopollig in background for all devs in pool
-	// if (g_B21_PZEM_Pools->autopoll(true)) {
-
-	// 	Serial.print("Autopolling enabled, ");
-
-	// 	Serial.print( "current Pollrate: ");
-	// 	Serial.print( g_B21_PZEM_Pools->getPollrate());
-	// 	Serial.print( " ms");
-	// 	Serial.println();
-
-	// 	g_B21_PZEM_Pools->setPollrate(1000);		// 1000ms
-
-	// 	Serial.print( "Changed Pollrate: ");
-	// 	Serial.print( g_B21_PZEM_Pools->getPollrate());
-	// 	Serial.print( " ms");
-	// 	Serial.println();
-
-	// 	//	just as an example so not to flood console let's change poll period to a lesser rate
-	// 	//	Normally you should not do this, better to always have fresh data and access it on demand
-
-	// 	// g_B21_PZEM_Pools->setPollrate(5000);  // 5 sec
 
 
-	// } else {
-	// 	Serial.println("Sorry, can't autopoll somehow :(");
-	// }
 
 
 	// let's assign our callback to PZPool instance.  I'm using lambda here to provide functional callback
-
 	g_B21_PZEM_Pools->attach_rx_callback([](uint8_t p_pzem_client_id, const RX_msg* p_pzem_rx_msg) {
-	//g_B21_PZEM_Pools->attach_rx_callback([](uint8_t pzid, const RX_msg* m) {
 		// I can do all the required things here, but to keep it sepparate - let's just call our function
 		B21_PZEM_rx_callback(p_pzem_client_id, p_pzem_rx_msg);
 	});
@@ -335,27 +243,23 @@ void	B21_Init() {
 
 	Serial.printf("\n\n\n\tPZEM multiple instance example\n\n");
 
-	// create a new PZPool object
 	g_B21_PZEM_Pools		  = new PZPool();
-
 
 	B21_PZEM_Port_init();
 
 	B21_PZEM_Client_init();
 
-
 	B21_PZEM_get_Meters_single();
-
 
 	B21_PZEM_set_AutoPollConfig(true, 1000);
 
 
 }
 
-// void B21_run() {
-// 	// we do not need this loop at all :)
-// 	vTaskDelete(NULL);
-// }
+void B21_run() {
+
+	vTaskDelete(NULL);
+}
 
 
 
@@ -367,6 +271,7 @@ void	B21_Init() {
  */
 
 void B21_PZEM_rx_callback(uint8_t p_pzem_client_id, const RX_msg* p_pzem_rx_msg) {
+
 	// Here I can get the id of PZEM (might get handy if have more than one attached)
 	Serial.printf(
 					"\nTime: %ld / Heap: %d - Callback triggered for PZEM Client ID: %d, name: %s\n"
@@ -376,19 +281,35 @@ void B21_PZEM_rx_callback(uint8_t p_pzem_client_id, const RX_msg* p_pzem_rx_msg)
 									, g_B21_PZEM_Pools->getDescr(p_pzem_client_id)
 				);
 
-	/*
-		Here it is possible to obtain a fresh new data same way as before, accessing metrics and state data via references
 
-		auto *m = (const pz004::metrics*)g_B21_PZEM_Pools->getMetrics(PZEM_ID_2)
-		Serial.printf("PZEM '%s' current as float: %.3f (Amps)\n", g_B21_PZEM_Pools->getDescr(PZEM_ID_2), m->asFloat(meter_t::cur));
-	*/
 
-	/*
-		It is also possible to work directly on a raw data from PZEM
-		let's call for a little help here and use a pretty_printer() function that parses and prints RX_msg to the stdout
-	*/
+    //So now we have a notification that pzem device with ID 'id' has been updated, we can print (or send somewhere new data)
+
+    if (g_B21_PZEM_Pools->getState(p_pzem_client_id)->dataStale()){
+        return;   // something is wrong, message is either bad or not a data packet
+	}
+
+    auto s = (const pz004::state*)g_B21_PZEM_Pools->getState(p_pzem_client_id);
+
+    Serial.printf("===\nPower alarm: %s\n"					, s->alarm ? "present" : "absent");
+
+    Serial.printf("Voltage:\t%d dV\t~ %.1f volts\n"			, s->data.voltage, 	s->data.asFloat(pzmbus::meter_t::vol)		);
+    Serial.printf("Current:\t%u mA\t~ %.3f amperes\n"		, s->data.current, 	s->data.asFloat(pzmbus::meter_t::cur)		);
+    Serial.printf("Power:\t\t%u dW\t~ %.1f watts\n"			, s->data.power, 	s->data.asFloat(pzmbus::meter_t::pwr)		);
+    Serial.printf("Energy:\t\t%u Wh\t~ %.3f kWatt*hours\n"	, s->data.energy, 	s->data.asFloat(pzmbus::meter_t::enrg)/1000 );
+    Serial.printf("Frequency:\t%d dHz\t~ %.1f Herz\n"		, s->data.freq, 	s->data.asFloat(pzmbus::meter_t::frq)		);
+    Serial.printf("Power factor:\t%d/100\t~ %.2f\n"			, s->data.pf, 		s->data.asFloat(pzmbus::meter_t::pf)		);
+
+
+	// auto *m = (const pz004::metrics*)g_B21_PZEM_Pools->getMetrics(PZEM_ID_2)
+	// Serial.printf("PZEM '%s' current as float: %.3f (Amps)\n", g_B21_PZEM_Pools->getDescr(PZEM_ID_2), m->asFloat(meter_t::cur));
+
+
+
+	// It is also possible to work directly on a raw data from PZEM
+	// let's call for a little help here and use a pretty_printer() function that parses and prints RX_msg to the stdout
+
 	// since I gave only PZEM004 devices attached, I call pz004::rx_msg_prettyp() method
 	pz004::rx_msg_prettyp(p_pzem_rx_msg);
 
-	// that's the end of a callback
 }
