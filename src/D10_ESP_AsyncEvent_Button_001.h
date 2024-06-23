@@ -99,10 +99,10 @@ void C10_init(){
     // We can also configure various button/gpio timeouts on how fast/slow Button
     // reacts to click/multiclick events, etc..
 
-    // g_C10_b1.timeouts.setDebounce(t)  -   debounce    time in microseconds, default is 5000
-    // g_C10_b1.timeouts.setLongPress(t) -   LongPress   timeout in milliseconds, how long you need to hold the button for it to trigger LongPress event
-    // g_C10_b1.timeouts.setAutoRepeat   -   AutoRepeat  timeout in milliseconds, how fast the button will generate 'autorepeat' events when held down
-    // g_C10_b1.timeouts.setMultiClick   -   MultiClick  timeout in milliseconds, how long Button will wait for consecutive clicks before triggering MultiClick event
+    g_C10_b1.timeouts.setDebounce(5000);    //-   debounce    time in microseconds, default is 5000
+    // g_C10_b1.timeouts.setLongPress(t);   //-   LongPress   timeout in milliseconds, how long you need to hold the button for it to trigger LongPress event
+    // g_C10_b1.timeouts.setAutoRepeat(t);  //-   AutoRepeat  timeout in milliseconds, how fast the button will generate 'autorepeat' events when held down
+    // g_C10_b1.timeouts.setMultiClick(t);  //-   MultiClick  timeout in milliseconds, how long Button will wait for consecutive clicks before triggering MultiClick event
 
 
     // Let's assign callbacks to some of the button actions
