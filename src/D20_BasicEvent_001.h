@@ -70,7 +70,7 @@ void C20_init(){
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     // subscribe our callback function to button events
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(EBTN_EVENTS, ESP_EVENT_ANY_ID, evt_hndlr, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(EBTN_EVENTS, ESP_EVENT_ANY_ID, C20_evt_hndlr, NULL, NULL));
 
     // let's enable ALL events for button 'one'
     g_C20_b1.enableEvent(event_t::click);
@@ -98,13 +98,13 @@ void C20_init(){
     g_C20_b2.enable();
 }
 
-void loop(){
+void C20_run(){
     // Simply do nothing here, all button events are processed asynchronously
     delay(1000);
 }
 
 // this function will simply print all received events for both buttons
-void evt_hndlr(void* handler_args, esp_event_base_t base, int32_t id, void* event_data){
+void C20_evt_hndlr(void* handler_args, esp_event_base_t base, int32_t id, void* event_data){
     // id here is a casted enum ESPButton::event_t
     // event_data here is EventMsg struct casted to void
 
