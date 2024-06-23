@@ -76,7 +76,7 @@ void C10_BTN_1_on_LongPress(){
     Serial.println("Long press action!");
     Serial.println("Enabling 'MultiClick' events. Now you can try double, triple, or any number of consecutive clicks...");
     // enable MultiClicks
-    g_C10_b1.onMultiClick(on_multiclick);
+    g_C10_b1.onMultiClick(C10_BTN_1_on_multiclick);
     // and let's disable "press", "release" actions to reduce number of printed text
     g_C10_b1.onPress(nullptr);
     g_C10_b1.onRelease(nullptr);
