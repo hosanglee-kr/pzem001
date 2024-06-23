@@ -49,7 +49,7 @@ void C40_init(){
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     // subscribe our callback function to encoder events
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(EBTN_ENC_EVENTS, ESP_EVENT_ANY_ID, encoder_events, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(EBTN_ENC_EVENTS, ESP_EVENT_ANY_ID, C40_encoder_events, NULL, NULL));
 
     // enable pseudo-encoder
     g_C40_enc.begin();
@@ -95,7 +95,7 @@ void C40_setup_action_button(){
 
     g_C40_b1.onLongPress([](){
         Serial.println("Reset to defaults: counter value 0, step 1, no constrains");
-        enc.reset();
+        g_C40_enc.reset();
     });
 
     g_C40_b1.onMultiClick([](int32_t cnt){
