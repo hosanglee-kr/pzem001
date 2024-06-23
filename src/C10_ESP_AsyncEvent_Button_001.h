@@ -94,7 +94,7 @@ void C10_init(){
 
     // activate event processing for button
     // NOTE: Button is still in 'disabled' state, you need to 'enable' it to start handling GPIO interrupts
-    g_C10_b.begin();
+    g_C10_b1.begin();
 
     // We can also configure various button/gpio timeouts on how fast/slow Button
     // reacts to click/multiclick events, etc..
@@ -110,7 +110,7 @@ void C10_init(){
     // Other actions will be activated later by special key sequences
 
     // on-Press callback
-    g_C10_b.onPress(C10_BTN_1_on_press);
+    g_C10_b1.onPress(C10_BTN_1_on_press);
 
     // on-Release callback
     g_C10_b1.onRelease(C10_BTN_1_on_release);
