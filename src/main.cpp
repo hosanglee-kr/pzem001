@@ -12,7 +12,7 @@
 #endif
 
 
-#define			B021			//	03_MultiplePZEM004 : Build-Ok
+//#define			B021			//	03_MultiplePZEM004 : Build-Ok
 #ifdef		B021
 	#include "B21_PZEM_edl_DC_Multi_003.h"
 #endif
@@ -23,7 +23,7 @@
 #endif
 
 
-//#define			B050		// 	05_TimeSeries	:  : Build-fail
+#define			B050		// 	05_TimeSeries	:  : Build-fail
 #ifdef		B050
 	#include "B50_PZEM_edi_DC_TimeSerial_003.h"
 #endif
