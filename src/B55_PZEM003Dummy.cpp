@@ -1,4 +1,4 @@
-
+#include "B55_PZEM003Dummy.hpp"
 
 #ifdef ARDUINO
 void FakeMeterPZ003::reset(){
