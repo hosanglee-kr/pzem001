@@ -47,6 +47,8 @@ UartQ*		g_B50_UartQueue;										// first, we need a UartQ object to handle RX/
 PZ003*		g_B50_PZ003;											// Also we need a placeholder for PZEM object
 PZ004*		g_B50_PZ004;
 
+PZ004*      g_B50_PZ004_Dummy = nullptr;
+
 
 void B50_MEMORY_Print(){
 
@@ -242,6 +244,14 @@ void B50_PZEM_Init() {
 								,"PZEM003-02"			//char[9]);   // i.e. PZEM-123
 							);		
 
+    g_B50_PZ004_Dummy = new DummyPZ004(G_B50_PZEM_PORT1_ID, ADDR_ANY);
+    // first run
+    //#ifdef ESPEM_DUMMY
+    //  pz = new DummyPZ004(PZEM_ID, ADDR_ANY);
+    //#else
+    //  pz = new PZ004(PZEM_ID, ADDR_ANY);
+    //#endif
+	
 	//g_B50_PZ004	= new PZ004(G_B50_PZEM_PORT1_ID);
 
 	Serial.printf("PZEM General Info: n");
