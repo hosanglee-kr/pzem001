@@ -50,14 +50,18 @@ public:
 
     // Derrived constructor
     DummyPZ003(const uint8_t _id,  uint8_t modbus_addr = ADDR_ANY, const char *_descr = nullptr) : PZ003(_id, modbus_addr, _descr) {
-		 fm.reset(); pz.data = fm.mt; 
+		fm.reset(); 
+		pz.data = fm.mt; 
 	}
 
     //virtual d-tor
     virtual ~DummyPZ003(){};
 
     // Override methods
-    void resetEnergyCounter() override { pz.data.energy = 0; fm.reset(); };
+    void resetEnergyCounter() override {
+		pz.data.energy = 0; 
+		fm.reset(); 
+	};
 
     void updateMetrics() override;
 
@@ -71,6 +75,9 @@ public:
     // Own methods
 
     // reset energy counter to some specific value
-    void resetEnergyCounter(uint32_t e){ pz.data.energy = e; fm.mt.energy = e; };
+    void resetEnergyCounter(uint32_t e){ 
+		pz.data.energy = e; 
+		fm.mt.energy = e; 
+	};
 };
 // #endif // ARDUINO
