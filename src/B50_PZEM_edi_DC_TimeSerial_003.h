@@ -50,7 +50,7 @@ PZ003*		g_B50_PZ003;											// Also we need a placeholder for PZEM object
 PZ004*		g_B50_PZ004;
 
 PZ004*      g_B50_PZ004_Dummy = nullptr;
-PZ003*      g_B50_PZ00e_Dummy = nullptr;
+PZ003*      g_B50_PZ003_Dummy = nullptr;
 
 
 void B50_MEMORY_Print(){
