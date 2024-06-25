@@ -1,3 +1,5 @@
+#include "pzem_edl.hpp"
+
 class FakeMeterPZ003 {
 public:
     // variances
