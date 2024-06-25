@@ -43,7 +43,7 @@ protected:
  * Not all functions supported (yet), i.e. alarms.
  * 
  */
-class DummyPZ00e : public PZ003 {
+class DummyPZ003 : public PZ003 {
 
 public:
     FakeMeterPZ003 fm;
