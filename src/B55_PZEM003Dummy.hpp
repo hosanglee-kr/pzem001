@@ -1,3 +1,5 @@
+
+/*
 #include "pzem_edl.hpp"
 
 // defaults for FakeMeter
@@ -15,23 +17,21 @@ public:
     // probability of randomizing a value on each poll, in 1/x
     var_t prob = var_t(10, 5, 15, 10);
 
-    /**
-     * @brief reset all values to defaults
-     * 
-     */
+    //**
+     //* @brief reset all values to defaults
+      
+     //* /
     void reset();
 
-    /**
-     * @brief toss metering variables
-     * using deviation and probability settings 
-     * 
-     */
+    //**
+    // * @brief toss metering variables
+     //* using deviation and probability settings 
+     //* /
     void randomize(pz003::metrics& m);
 
-    /**
-     * @brief recalculate power/energy values based on time elapsed and current metrics
-     * 
-     */
+    //**
+    // * @brief recalculate power/energy values based on time elapsed and current metrics
+     //
     void updnrg(pz003::metrics& m);
 
 protected:
@@ -41,14 +41,7 @@ protected:
 };
 
 
-/**
- * @brief A fake PZEM004 device class
- * it pretends to be PZEM004 class but does not talk via serial to the real device,
- * it just provides some random meterings. Could be used for PZEM software prototyping
- * without the need for real device.
- * Not all functions supported (yet), i.e. alarms.
- * 
- */
+
 class DummyPZ003 : public PZ003 {
 
 public:
@@ -71,13 +64,13 @@ public:
 
     void updateMetrics() override;
 
-    /**
-     * @brief a "do nothing" sink
-     * I do not expect any real data to be fed to dummy device
-     */
+    //
+    // * @brief a "do nothing" sink
+    // * I do not expect any real data to be fed to dummy device
+     //
     void rx_sink(const RX_msg *msg) override {};
 
-    /* ***  *** */
+    // ***  *** //
     // Own methods
 
     // reset energy counter to some specific value
@@ -87,3 +80,4 @@ public:
 	};
 };
 // #endif // ARDUINO
+*/
