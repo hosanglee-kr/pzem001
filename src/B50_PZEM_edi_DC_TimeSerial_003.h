@@ -13,6 +13,8 @@ GitHub: https://github.com/vortigont/pzem-edl
 #include <Arduino.h>
 
 #include "pzem_edl.hpp"
+#include "B55_PZEM003Dummy.hpp"
+
 #include "timeseries.hpp"
 
 
@@ -48,6 +50,7 @@ PZ003*		g_B50_PZ003;											// Also we need a placeholder for PZEM object
 PZ004*		g_B50_PZ004;
 
 PZ004*      g_B50_PZ004_Dummy = nullptr;
+PZ003*      g_B50_PZ00e_Dummy = nullptr;
 
 
 void B50_MEMORY_Print(){
@@ -245,6 +248,8 @@ void B50_PZEM_Init() {
 							);		
 
     g_B50_PZ004_Dummy = new DummyPZ004(G_B50_PZEM_PORT1_ID, ADDR_ANY);
+    g_B50_PZ003_Dummy = new DummyPZ003(G_B50_PZEM_PORT1_ID, ADDR_ANY);
+	
     // first run
     //#ifdef ESPEM_DUMMY
     //  pz = new DummyPZ004(PZEM_ID, ADDR_ANY);
