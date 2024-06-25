@@ -1,3 +1,5 @@
+/*
+
 #include "pzem_edl.hpp"
 #include "B55_PZEM003Dummy.hpp"
 
@@ -49,7 +51,7 @@ void FakeMeterPZ003::updnrg(pz003::metrics& m){
     _nrg %= 3600000;
 }
 
-// ****  Dummy PZEM004 Implementation  **** //
+//  Dummy PZEM004 Implementation  //
 
 void DummyPZ003::updateMetrics(){
     pz.update_us = esp_timer_get_time();
@@ -65,3 +67,5 @@ void DummyPZ003::updateMetrics(){
 }
 
 #endif // ARDUINO
+
+*/
