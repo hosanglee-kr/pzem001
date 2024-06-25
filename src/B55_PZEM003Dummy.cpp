@@ -1,3 +1,4 @@
+#include "pzem_edl.hpp"
 #include "B55_PZEM003Dummy.hpp"
 
 #ifdef ARDUINO
