@@ -1,5 +1,11 @@
 #include "pzem_edl.hpp"
 
+// defaults for FakeMeter
+#define DEF_U 2200;
+#define DEF_I 500;
+#define DEF_FREQ 500;
+#define DEF_PF 80;
+
 class FakeMeterPZ003 {
 public:
     // variances
