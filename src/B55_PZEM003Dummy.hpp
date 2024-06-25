@@ -49,7 +49,9 @@ public:
     FakeMeterPZ003 fm;
 
     // Derrived constructor
-    DummyPZ003(const uint8_t _id,  uint8_t modbus_addr = ADDR_ANY, const char *_descr = nullptr) : PZ003(_id, modbus_addr, _descr) { fm.reset(); pz.data = fm.mt; }
+    DummyPZ003(const uint8_t _id,  uint8_t modbus_addr = ADDR_ANY, const char *_descr = nullptr) : PZ003(_id, modbus_addr, _descr) {
+		 fm.reset(); pz.data = fm.mt; 
+	}
 
     //virtual d-tor
     virtual ~DummyPZ003(){};
