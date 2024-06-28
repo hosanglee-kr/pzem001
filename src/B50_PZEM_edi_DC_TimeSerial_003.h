@@ -9,19 +9,10 @@
 
 #include "timeseries.hpp"
 
-
-void B50_PZEM_rx_callback(uint8_t p_PZEM_id, const RX_msg* p_PZEM_RX_msg);
-//void mycallback(uint8_t id, const RX_msg *m);
-
 #include <esp32/himem.h>
 #include <esp32/spiram.h>
 
-
-
 //	This example shows how to collect TimeSeries data for PZEM metrics
-//	Pls, check previous examples for basic operations
-
-
 
 using namespace pz003;			   									// we will need this namespace for PZEM004v3.0 device
 //using namespace pz004;			   								// we will need this namespace for PZEM004v3.0 device
@@ -33,10 +24,7 @@ using namespace pz003;			   									// we will need this namespace for PZEM004v
 
 #define 	G_B50_PZEM_PORT1_ID		   		42  					// this is a unique PZEM ID for reference, it is NOT slave MODBUS address, just some random id
 						   											// (we all know why '42' is THE number, right? :) )
-
-
 UartQ*		g_B50_UartQueue;										// first, we need a UartQ object to handle RX/TX message queues
-
 
 PZ003*		g_B50_PZ003;											// Also we need a placeholder for PZEM object
 PZ004*		g_B50_PZ004;
@@ -44,23 +32,15 @@ PZ004*		g_B50_PZ004;
 PZ004*      g_B50_PZ004_Dummy = nullptr;
 PZ003*      g_B50_PZ003_Dummy = nullptr;
 
+///////////
+void B50_PZEM_rx_callback(uint8_t p_PZEM_id, const RX_msg* p_PZEM_RX_msg);
+void B50_MEMORY_Print();
 
-void B50_MEMORY_Print(){
+void B50_PZEM_get_Metrics_PZ003_single();
 
-	Serial.printf("\nspiram size %u\n"								, esp_spiram_get_size());
-	Serial.printf("himem free %u\n"									, esp_himem_get_free_size());
-	Serial.printf("himem phys %u\n"									, esp_himem_get_phys_size());
-	Serial.printf("himem reserved %u\n"								, esp_himem_reserved_area_size());
+void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Container_id);
 
-
-	// print memory stat
-	Serial.printf("SRAM Heap total: %d, free Heap %d\n"				, ESP.getHeapSize(), ESP.getFreeHeap());
-	Serial.printf("SPI-RAM heap total: %d, SPI-RAM free Heap %d\n"	, ESP.getPsramSize(), ESP.getFreePsram());
-	Serial.printf("ChipRevision %d, Cpu Freq %d, SDK Version %s\n"	, ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
-	Serial.printf("Flash Size %d, Flash Speed %d\n"					, ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
-
-
-}
+/////////// 
 
 void B50_PZEM_get_Metrics_PZ003_single(){
 	// and try to check the voltage value
@@ -182,8 +162,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 																	, d->voltage
 																	, d->current
 																	, d->power
-																	, _i->energy
-																	// , x.freq
+																	, _i->energy															// , x.freq
 																	);
 		//Serial.printf("PZEM voltage, cur, pwr: %d\t%d\t%d\n", d[i].voltage, d[i].current, d[i].power);
 	}
@@ -234,10 +213,10 @@ void B50_PZEM_Init() {
 		// #define ADDR_ANY                0xF8    // 248 	// default catch-all address
 
 	g_B50_PZ003	= new PZ003(
-								  G_B50_PZEM_PORT1_ID
-								, ADDR_ANY
-								,"PZEM003-02"			//char[9]);   // i.e. PZEM-123
-							);		
+					   G_B50_PZEM_PORT1_ID
+					 , ADDR_ANY
+					 , "PZEM003-02"			//char[9]);   // i.e. PZEM-123
+				);		
 
     g_B50_PZ004_Dummy = new DummyPZ004(G_B50_PZEM_PORT1_ID, ADDR_ANY);
     g_B50_PZ003_Dummy = new DummyPZ003(G_B50_PZEM_PORT1_ID, ADDR_ANY);
@@ -274,7 +253,6 @@ void B50_PZEM_Init() {
 	Serial.println("===");
 
 	B50_MEMORY_Print();
-
 
 
 	Serial.println("\nAllocate sampler buffer");
@@ -335,8 +313,6 @@ void B50_PZEM_Init() {
 	Serial.printf("SPI-RAM heap total: %d, SPI-RAM free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
 
-
-	
 	// Now I need to hookup to the PZEM object, it autopolls every second so I can use it's callback to collect metrics data to TSContainer
 	// 이제 PZEM 객체에 연결해야 합니다. PZEM 객체는 매초 자동 폴링되므로 콜백을 사용하여 TSContainer에 대한 메트릭 데이터를 수집할 수 있습니다.
 	
@@ -363,25 +339,14 @@ void B50_PZEM_Init() {
 
 	B50_PZEM_get_Metrics_PZ003_single();
 
-
-
 	if (g_B50_PZ003->autopoll(true)) {
 		Serial.println("Autopolling enabled");
 	} else {
 		Serial.println("Sorry, can't autopoll somehow :(");
 	}
 
-
 	B50_PZEM_Test1(&v_ts_Container, v_ts_id_01sec );
 	
-
-
-
-
-	// now I do not need to do anything
-	// I can just halt here in an endless loop, but every second with a new message console will print metrics data from PZEM
-	// 이제 난 아무것도 할 필요가 없어
-    // 여기서 무한 루프를 멈출 수 있지만 새 메시지 콘솔을 사용하면 매초마다 PZEM의 메트릭 데이터가 인쇄됩니다.
 	for (;;) {
 		delay(5000);
 
@@ -389,17 +354,12 @@ void B50_PZEM_Init() {
 
 		B50_PZEM_Test2(&v_ts_Container, v_ts_id_05sec );
 
-
-
 		B50_PZEM_Test3(&v_ts_Container, v_ts_id_05sec );
-		
-
 		
 	}
 }
 
 void B50_PZEM_run() {
-	// we do not need this loop at all :)
 	for (;;) {
 		delay(1000);
 	}
@@ -443,3 +403,20 @@ void B50_PZEM_rx_callback(uint8_t p_PZEM_id, const RX_msg* p_PZEM_RX_msg){
 
 	// that's the end of a callback
 }
+
+
+void B50_MEMORY_Print(){
+
+	Serial.printf("\nspiram size %u\n"								, esp_spiram_get_size());
+	Serial.printf("himem free %u\n"									, esp_himem_get_free_size());
+	Serial.printf("himem phys %u\n"									, esp_himem_get_phys_size());
+	Serial.printf("himem reserved %u\n"								, esp_himem_reserved_area_size());
+
+	// print memory stat
+	Serial.printf("SRAM Heap total: %d, free Heap %d\n"				, ESP.getHeapSize(), ESP.getFreeHeap());
+	Serial.printf("SPI-RAM heap total: %d, SPI-RAM free Heap %d\n"	, ESP.getPsramSize(), ESP.getFreePsram());
+	Serial.printf("ChipRevision %d, Cpu Freq %d, SDK Version %s\n"	, ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
+	Serial.printf("Flash Size %d, Flash Speed %d\n"					, ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
+
+}
+
