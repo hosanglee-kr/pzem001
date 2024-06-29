@@ -46,10 +46,10 @@ void B50_PZEM_get_Metrics_PZ003_single(){
 	// and try to check the voltage value
 
 	auto *m = g_B50_PZ003->getMetricsPZ003();		// obtain a pointer to objects metrics
-	auto *m = g_B50_PZ004->getMetricsPZ004();		// obtain a pointer to objects metrics
+	auto *m2 = g_B50_PZ004->getMetricsPZ004();		// obtain a pointer to objects metrics
 
-	auto *m = g_B50_PZ004_Dummy->getMetricsPZ004();
-	auto *m = g_B50_PZ003_Dummy->getMetricsPZ003();
+	auto *m3 = g_B50_PZ004_Dummy->getMetricsPZ004();
+	auto *m4 = g_B50_PZ003_Dummy->getMetricsPZ003();
 
 
 	// now we should have some response with updated values, let's check again
