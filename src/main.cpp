@@ -23,9 +23,9 @@
 #endif
 
 
-//#define			B050		// 	05_TimeSeries	:  : Build-fail
+#define			B050		// 	05_TimeSeries	:  : Build-fail
 #ifdef		B050
-	#include "B50_PZEM_edi_DC_TimeSerial_003.h"
+	#include "B50_PZEM_edi_DC_Timeseries_003.h"
 #endif
 
 #define			B051		// 	05_TimeSeries	:  : Build-fail
