@@ -28,6 +28,12 @@
 	#include "B50_PZEM_edi_DC_TimeSerial_003.h"
 #endif
 
+#define			B051		// 	05_TimeSeries	:  : Build-fail
+#ifdef		B051
+	#include "B51_PZEM_edi_DC_Timeseries_010.h"
+#endif
+
+
 //#define			B070		//  PZEM_CLI		:  : Build-fail
 #ifdef		B070
 	#include "B70_PZEM_CLI_002.h"
@@ -78,6 +84,12 @@ void setup() {
 		B50_PZEM_Init();
 	#endif
 
+	#ifdef B051
+		B51_init();
+	#endif
+
+
+	
 	#ifdef	B070
 		B70_PZEM_CLI_init();
 	#endif
@@ -116,6 +128,10 @@ void loop() {
 		B50_PZEM_run();
 	#endif
 
+	#ifdef B051
+		B51_run();
+	#endif
+	
 	#ifdef	B070
 		B70_PZEM_CLI_run();
 	#endif

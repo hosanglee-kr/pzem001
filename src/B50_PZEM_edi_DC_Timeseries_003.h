@@ -1,16 +1,22 @@
 
 /// GitHub: https://github.com/vortigont/pzem-edl
-/// ///
+
 
 #include <Arduino.h>
 
 #include "pzem_edl.hpp"
 #include "timeseries.hpp"
 
+void B50_PZEM_rx_callback(uint8_t p_PZEM_id, const RX_msg* p_PZEM_RX_msg);
+//void mycallback(uint8_t id, const RX_msg *m);
+
 #include <esp32/himem.h>
 #include <esp32/spiram.h>
 
+
 //	This example shows how to collect TimeSeries data for PZEM metrics
+//	Pls, check previous examples for basic operations
+
 
 using namespace pz003;			   									// we will need this namespace for PZEM004v3.0 device
 //using namespace pz004;			   								// we will need this namespace for PZEM004v3.0 device
@@ -40,14 +46,17 @@ void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 
 ///////////
 
+
 void B50_PZEM_get_Metrics_PZ003_single(){
 	// and try to check the voltage value
 
 	auto *m = g_B50_PZ003->getMetricsPZ003();		// obtain a pointer to objects metrics
+
 	auto *m2 = g_B50_PZ004->getMetricsPZ004();		// obtain a pointer to objects metrics
 
 	auto *m3 = g_B50_PZ004_Dummy->getMetricsPZ004();
 	auto *m4 = g_B50_PZ003_Dummy->getMetricsPZ003();
+
 
 
 	// now we should have some response with updated values, let's check again
@@ -74,7 +83,6 @@ void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 
 	//	Let's make a simple task - we will sleep for random time from 0 to 5 seconds and on wake we will check PZEM for new data
 
-
 	/*
 		int times = 5;
 		do {
@@ -88,9 +96,9 @@ void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 		} while(--times);
 	*/
 
-
+	
 	// Serial.println("Release sampler");
-
+	
 	// //g_B50_PZ003->ts = new TSNode<pz004::metrics>(512);
 	// //auto t = g_B50_PZ003->ts;
 	// g_B50_PZ003->ts = nullptr;
@@ -164,7 +172,10 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 																	, d->voltage
 																	, d->current
 																	, d->power
-																	, _i->energy															// , x.freq
+
+																	, _i->energy
+																	// , x.freq
+
 																	);
 		//Serial.printf("PZEM voltage, cur, pwr: %d\t%d\t%d\n", d[i].voltage, d[i].current, d[i].power);
 	}
@@ -187,6 +198,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 
 	const TimeSeries<pz003::metrics>* ts2 = p_ts_Container->getTS(p_ts_Container_id);
 
+  
 	// // No iterator
 	// for (int i = 0; i != p_ts_Container->getTSsize(); ++i){ //} -> ->ts->size; ++i){
 	// 	auto d = g_B50_PZ003->ts->get()[i];
@@ -230,6 +242,7 @@ void B50_PZEM_Init() {
     //  pz = new PZ004(PZEM_ID, ADDR_ANY);
     //#endif
 
+
 	//g_B50_PZ004	= new PZ004(G_B50_PZEM_PORT1_ID);
 
 	Serial.printf("PZEM General Info: n");
@@ -264,7 +277,6 @@ void B50_PZEM_Init() {
 	//TSContainer<pz004::metrics> v_ts_Container;
 
 
-
 	// this will create TS object that holds per-second metrics data total 60 samples.
 	// Each sample takes about 20 bytes of (SPI)-RAM, It not a problem to stora thouthands if you have SPI-RAM
 	// 그러면 초당 측정항목 데이터 총 60개 샘플을 보유하는 TS 개체가 생성됩니다.
@@ -285,7 +297,6 @@ void B50_PZEM_Init() {
 
 	Serial.printf("Add per-second TimeSeries, id: %d\n", v_ts_id_01sec);
 
-
 	 // the same for 5-seconds interval, 60 samples totals no averaging is done, just saving probes every 5 seconds
 	 // 5초 간격에도 동일, 총 60개 샘플 평균화는 수행되지 않고 5초마다 프로브를 저장합니다.
 
@@ -297,10 +308,8 @@ void B50_PZEM_Init() {
 
 	Serial.printf("Add per-second TimeSeries, id: %d\n", v_ts_id_05sec);
 
-
 	// the same for 30-seconds interval, 100 samples totals no averaging is done, just saving probes every 5 seconds
 	// 30초 간격에도 동일, 총 100개 샘플 평균화는 수행되지 않고 5초마다 프로브만 저장됩니다.
-
 
 	uint8_t v_ts_id_30sec = v_ts_Container.addTS(
 								  100
@@ -313,7 +322,6 @@ void B50_PZEM_Init() {
 	Serial.println();
 	Serial.printf("SRAM Heap total: %d, free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
 	Serial.printf("SPI-RAM heap total: %d, SPI-RAM free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
-
 
 	// Now I need to hookup to the PZEM object, it autopolls every second so I can use it's callback to collect metrics data to TSContainer
 	// 이제 PZEM 객체에 연결해야 합니다. PZEM 객체는 매초 자동 폴링되므로 콜백을 사용하여 TSContainer에 대한 메트릭 데이터를 수집할 수 있습니다.
@@ -376,8 +384,6 @@ void B50_PZEM_run() {
 
 void B50_PZEM_rx_callback(uint8_t p_PZEM_id, const RX_msg* p_PZEM_RX_msg){
 //void mycallback(uint8_t id, const RX_msg *m) {
-
-
 
 	//g_B50_PZ003->attach_rx_callback([v_ts_Container_ref](uint8_t pzid, const RX_msg *m) {
 	auto *data = g_B50_PZ003->getMetricsPZ003();			 		// obtain a pointer to objects metrics
