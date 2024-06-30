@@ -5,8 +5,6 @@
 #include <Arduino.h>
 
 #include "pzem_edl.hpp"
-#include "B55_PZEM003Dummy.hpp"
-
 #include "timeseries.hpp"
 
 #include <esp32/himem.h>
@@ -40,7 +38,7 @@ void B50_PZEM_get_Metrics_PZ003_single();
 
 void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Container_id);
 
-/////////// 
+///////////
 
 void B50_PZEM_get_Metrics_PZ003_single(){
 	// and try to check the voltage value
@@ -75,7 +73,7 @@ void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 	//	(default poll time is 1 second)
 
 	//	Let's make a simple task - we will sleep for random time from 0 to 5 seconds and on wake we will check PZEM for new data
-	
+
 
 	/*
 		int times = 5;
@@ -90,9 +88,9 @@ void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 		} while(--times);
 	*/
 
-	
+
 	// Serial.println("Release sampler");
-	
+
 	// //g_B50_PZ003->ts = new TSNode<pz004::metrics>(512);
 	// //auto t = g_B50_PZ003->ts;
 	// g_B50_PZ003->ts = nullptr;
@@ -100,7 +98,7 @@ void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 
 	// Serial.printf("Internal Total heap %d, internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
 	// Serial.printf("SPIRam Total heap %d, SPIRam Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
-	
+
 
 	/*
 		TimeSeries<pz004::metrics>ts(1, 30, 0);
@@ -154,7 +152,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 	//for (const auto& d : g_B50_PZ003->ts){
 
 	for (auto _i = ts->cbegin(); _i != ts->cend(); ++_i){
-	//for (auto _i = g_B50_PZ003->ts->cbegin(); _i != g_B50_PZ003->ts->cend(); ++_i){	
+	//for (auto _i = g_B50_PZ003->ts->cbegin(); _i != g_B50_PZ003->ts->cend(); ++_i){
 	//for (const auto& _i = g_B50_PZ003->ts->cbegin(); _i != g_B50_PZ003->ts->cend(); ++_i){
 		const auto &d = _i;
 		auto x = *_i;
@@ -171,7 +169,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 		//Serial.printf("PZEM voltage, cur, pwr: %d\t%d\t%d\n", d[i].voltage, d[i].current, d[i].power);
 	}
 
-	
+
 
 	// test iterators
 
@@ -188,7 +186,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 	///auto ts = p_ts_Container->getTS(p_ts_Container_id);
 
 	const TimeSeries<pz003::metrics>* ts2 = p_ts_Container->getTS(p_ts_Container_id);
-	
+
 	// // No iterator
 	// for (int i = 0; i != p_ts_Container->getTSsize(); ++i){ //} -> ->ts->size; ++i){
 	// 	auto d = g_B50_PZ003->ts->get()[i];
@@ -198,7 +196,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 	// 	Serial.printf("PZEM voltage, cur, pwr: %d\t%d\t%d\n", d.voltage, d.current, d.power);
 	// 	//Serial.printf("PZEM voltage, cur, pwr: %d\t%d\t%d\n", d[i].voltage, d[i].current, d[i].power);
 	// }
-	
+
 }
 
 void B50_PZEM_Init() {
@@ -220,18 +218,18 @@ void B50_PZEM_Init() {
 					   G_B50_PZEM_PORT1_ID
 					 , ADDR_ANY
 					 , "PZEM003-02"			//char[9]);   // i.e. PZEM-123
-				);		
+				);
 
     g_B50_PZ004_Dummy = new DummyPZ004(G_B50_PZEM_PORT1_ID, ADDR_ANY);
     g_B50_PZ003_Dummy = new DummyPZ003(G_B50_PZEM_PORT1_ID, ADDR_ANY);
-	
+
     // first run
     //#ifdef ESPEM_DUMMY
     //  pz = new DummyPZ004(PZEM_ID, ADDR_ANY);
     //#else
     //  pz = new PZ004(PZEM_ID, ADDR_ANY);
     //#endif
-	
+
 	//g_B50_PZ004	= new PZ004(G_B50_PZEM_PORT1_ID);
 
 	Serial.printf("PZEM General Info: n");
@@ -242,7 +240,7 @@ void B50_PZEM_Init() {
 									);
 
 	// and link our port with PZEM object
-	
+
 	g_B50_PZ003->attachMsgQ(g_B50_UartQueue);
 	//g_B50_PZ004->attachMsgQ(g_B50_UartQueue);
 
@@ -264,21 +262,21 @@ void B50_PZEM_Init() {
 	// Create Container object for TimeSeries buffers
 	TSContainer<pz003::metrics> v_ts_Container;
 	//TSContainer<pz004::metrics> v_ts_Container;
-	
 
-	
-	// this will create TS object that holds per-second metrics data total 60 samples. 
+
+
+	// this will create TS object that holds per-second metrics data total 60 samples.
 	// Each sample takes about 20 bytes of (SPI)-RAM, It not a problem to stora thouthands if you have SPI-RAM
 	// 그러면 초당 측정항목 데이터 총 60개 샘플을 보유하는 TS 개체가 생성됩니다.
 	// 각 샘플은 약 20바이트의 (SPI)-RAM을 사용하며, SPI-RAM이 있으면 저장하는데 문제가 되지 않습니다.
-	 
+
 	// (esp_timer_get_time() >> 20) is a timestamp marking starting point . actually it is just ~seconds from boot
-	 
+
 
 	// uint8_t TSContainer<T>::addTS(size_t s, uint32_t start_time, uint32_t period = 1, const char *descr = nullptr, uint8_t id = 0);
 
-	uint8_t v_ts_id_01sec = v_ts_Container.addTS(	
-								  60								// size_t 		SampleCount 
+	uint8_t v_ts_id_01sec = v_ts_Container.addTS(
+								  60								// size_t 		SampleCount
 								, esp_timer_get_time() >> 20		// uint32_t 	start_time
 								, 1U								// uint32_t 	period 		= 1
 								, nullptr							// char *		descr 		= nullptr
@@ -287,10 +285,10 @@ void B50_PZEM_Init() {
 
 	Serial.printf("Add per-second TimeSeries, id: %d\n", v_ts_id_01sec);
 
-	
+
 	 // the same for 5-seconds interval, 60 samples totals no averaging is done, just saving probes every 5 seconds
 	 // 5초 간격에도 동일, 총 60개 샘플 평균화는 수행되지 않고 5초마다 프로브를 저장합니다.
-	 
+
 	uint8_t v_ts_id_05sec = v_ts_Container.addTS(
 								  60
 								, esp_timer_get_time() >> 20
@@ -299,10 +297,10 @@ void B50_PZEM_Init() {
 
 	Serial.printf("Add per-second TimeSeries, id: %d\n", v_ts_id_05sec);
 
-	
+
 	// the same for 30-seconds interval, 100 samples totals no averaging is done, just saving probes every 5 seconds
 	// 30초 간격에도 동일, 총 100개 샘플 평균화는 수행되지 않고 5초마다 프로브만 저장됩니다.
-	
+
 
 	uint8_t v_ts_id_30sec = v_ts_Container.addTS(
 								  100
@@ -319,7 +317,7 @@ void B50_PZEM_Init() {
 
 	// Now I need to hookup to the PZEM object, it autopolls every second so I can use it's callback to collect metrics data to TSContainer
 	// 이제 PZEM 객체에 연결해야 합니다. PZEM 객체는 매초 자동 폴링되므로 콜백을 사용하여 TSContainer에 대한 메트릭 데이터를 수집할 수 있습니다.
-	
+
 	auto v_ts_Container_ref = &v_ts_Container;			// a v_ts_Container_ref of our Container to feed it the labda function
 
 	// g_B50_PZ003->attach_rx_callback([v_ts_Container_ref](uint8_t p_PZEM_id, const RX_msg* p_PZEM_RX_msg) {
@@ -350,7 +348,7 @@ void B50_PZEM_Init() {
 	}
 
 	B50_PZEM_Test1(&v_ts_Container, v_ts_id_01sec );
-	
+
 	for (;;) {
 		delay(5000);
 
@@ -359,7 +357,7 @@ void B50_PZEM_Init() {
 		B50_PZEM_Test2(&v_ts_Container, v_ts_id_05sec );
 
 		B50_PZEM_Test3(&v_ts_Container, v_ts_id_05sec );
-		
+
 	}
 }
 
@@ -378,17 +376,17 @@ void B50_PZEM_run() {
 
 void B50_PZEM_rx_callback(uint8_t p_PZEM_id, const RX_msg* p_PZEM_RX_msg){
 //void mycallback(uint8_t id, const RX_msg *m) {
-	
-	
-	
+
+
+
 	//g_B50_PZ003->attach_rx_callback([v_ts_Container_ref](uint8_t pzid, const RX_msg *m) {
 	auto *data = g_B50_PZ003->getMetricsPZ003();			 		// obtain a pointer to objects metrics
 	//auto *data = g_B50_PZ003->getMetricsPZ004();			 	// obtain a pointer to objects metrics
-		
+
 	//////	v_ts_Container_ref->push(*data, esp_timer_get_time() >> 20);	 	// push data to TS container and mark it with "seconds' timer 데이터를 TS 컨테이너에 푸시하고 '초' 타이머로 표시합니다.
 	//});
 
-	
+
 	// I can get the id of PZEM (might get handy if have more than one attached)
 	Serial.printf("\nCallback triggered for PZEM ID: %d\n", p_PZEM_id);
 
