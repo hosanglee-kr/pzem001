@@ -220,7 +220,7 @@ void B51_print_timeseries(){
     // Process 1 sec data
 
     // get a ptr to TimeSeries buffer
-    auto ts = tsc.getTS(g_B51_sec1);
+    auto ts = g_B51_tsc.getTS(g_B51_sec1);
 
     // get const iterator pointing to the begining of the buffer, i.e. the oldest data sample
     auto iter = ts->cbegin();
