@@ -70,7 +70,7 @@ void B51_init(){
     Serial.printf("\n\n\n\tPZEM004 TimeSeries example\n\n");
 
     // Create new serial Q object attached to specified gpios 
-    g_B51_qport = new g_B51_UartQ(G_B51_PZEM_UART_PORT, G_B51_RX_PIN, G_B51_TX_PIN);
+    g_B51_qport = new UartQ(G_B51_PZEM_UART_PORT, G_B51_RX_PIN, G_B51_TX_PIN);
 
     // Now let's create a PZEM004 object
     g_B51_pz = new PZ004(G_B51_PZEM_ID);
@@ -208,7 +208,7 @@ void B51_setup_timeseries(struct timeval *t)
 
     // here I will set a timer to do printing task to serial
     g_B51_t_5sec = xTimerCreate("5sec", pdMS_TO_TICKS(5000), pdTRUE, nullptr, B51_print_wait4data);
-    xTimerStart(t_5sec, 100);
+    xTimerStart(g_B51_t_5sec, 100);
 };
 
 // function is triggered by a timer each minute
