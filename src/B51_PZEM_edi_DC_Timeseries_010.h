@@ -26,10 +26,10 @@ GitHub: https://github.com/vortigont/pzem-edl
 
 // For this example we need an internet connection to get time from NTP server
 
-const char* ssid     = "your-ssid";
-const char* password = "your-password";
-const char* ntpServer1 = "pool.ntp.org";
-const char* time_zone = "MSK-3";
+const char* g_B51_ssid     = "your-ssid";
+const char* g_B51_password = "your-password";
+const char* g_B51_ntpServer1 = "pool.ntp.org";
+const char* g_B51_time_zone = "MSK-3";
 
 using namespace pz004;                  // we will need this namespace for PZEM004v3.0 device
 
@@ -111,13 +111,13 @@ void B51_init(){
     sntp_set_time_sync_notification_cb( B51_setup_timeseries );
 
     // configure TimeZone and ntp server
-    configTzTime(time_zone, ntpServer1);
+    configTzTime(g_B51_time_zone, g_B51_ntpServer1);
 
     Serial.println();
     Serial.print("[WiFi] Connecting to ");
-    Serial.println(ssid);
+    Serial.println(g_B51_ssid);
 
-    WiFi.begin(ssid, password);
+    WiFi.begin(g_B51_ssid, g_B51_password);
 
     // Will try for about 10 seconds (20x 500ms)
     int tryDelay = 500;
@@ -154,7 +154,7 @@ void B51_init(){
 
 
 
-void loop(){
+void B51_run(){
     // we do not need this loop at all :)
     for (;;){
         delay(1000);
@@ -163,7 +163,7 @@ void loop(){
 
 
 // Callback function (get's called when time adjusts via NTP)
-void setup_timeseries(struct timeval *t)
+void B51_setup_timeseries(struct timeval *t)
 {
     Serial.println("Got time adjustment from NTP!");
     Serial.println("\nAllocate sampler buffer");
@@ -174,20 +174,20 @@ void setup_timeseries(struct timeval *t)
      * Each sample takes about 28 bytes of (SPI)-RAM, it's not a problem to store thouthands if you have SPI-RAM
      * 
      */
-    sec1 = tsc.addTS(300, time(nullptr) /* current timestamp*/, 1 /* second interval*/, "TimeSeries 1 Second" /* Mnemonic descr*/ );
-    Serial.printf("Add per-second TimeSeries, id: %d\n", sec1);
+    g_B51_sec1 = g_B51_tsc.addTS(300, time(nullptr) /* current timestamp*/, 1 /* second interval*/, "TimeSeries 1 Second" /* Mnemonic descr*/ );
+    Serial.printf("Add per-second TimeSeries, id: %d\n", g_B51_sec1);
 
     /**
      * the same for 30-seconds interval, 240 samples totals, will keep data for 120 min
      */
-    sec30 = tsc.addTS(240, time(nullptr) /* current timestamp*/, 10 /* second interval*/, "TimeSeries 30 Seconds" /* Mnemonic descr*/ );
-    Serial.printf("Add 30 second TimeSeries, id: %d\n", sec30);
+    g_B51_sec30 = g_B51_tsc.addTS(240, time(nullptr) /* current timestamp*/, 10 /* second interval*/, "TimeSeries 30 Seconds" /* Mnemonic descr*/ );
+    Serial.printf("Add 30 second TimeSeries, id: %d\n", g_B51_sec30);
 
     /**
      * the same for 300-seconds interval, 288 samples totals, will keep data for 24 hours
      */
-    sec300 = tsc.addTS(288, time(nullptr) /* current timestamp*/, 300 /* second interval*/, "TimeSeries 5 Min" /* Mnemonic descr*/ );
-    Serial.printf("Add 5 min TimeSeries, id: %d\n", sec300);
+    g_B51_sec300 = g_B51_tsc.addTS(288, time(nullptr) /* current timestamp*/, 300 /* second interval*/, "TimeSeries 5 Min" /* Mnemonic descr*/ );
+    Serial.printf("Add 5 min TimeSeries, id: %d\n", g_B51_sec300);
 
     // check memory usage, if SPI-RAM is available on board, than TS will allocate buffer in SPI-RAM
     Serial.println();
@@ -200,19 +200,19 @@ void setup_timeseries(struct timeval *t)
      * to collect metrics data and push it to TSContainer
      * 
      */
-    auto ref = &tsc;    // a ref of our Container to feed it to lambda function
-    pz->attach_rx_callback([ref](uint8_t pzid, const RX_msg* m){
+    auto ref = &g_B51_tsc;    // a ref of our Container to feed it to lambda function
+    g_B51_pz->attach_rx_callback([ref](uint8_t pzid, const RX_msg* m){
         // obtain a pointer to objects metrics and push data to TS container marking it with current timestamp
-        ref->push(*(pz->getMetricsPZ004()), time(nullptr));
+        ref->push(*(g_B51_pz->getMetricsPZ004()), time(nullptr));
     });
 
     // here I will set a timer to do printing task to serial
-    t_5sec = xTimerCreate("5sec", pdMS_TO_TICKS(5000), pdTRUE, nullptr, print_wait4data);
+    g_B51_t_5sec = xTimerCreate("5sec", pdMS_TO_TICKS(5000), pdTRUE, nullptr, B51_print_wait4data);
     xTimerStart(t_5sec, 100);
 };
 
 // function is triggered by a timer each minute
-void print_timeseries(){
+void B51_print_timeseries(){
     // Print timeseries for 1 30 300 sec
     Serial.println();
     Serial.println("=== Print TimeSeries data ===");
@@ -220,7 +220,7 @@ void print_timeseries(){
     // Process 1 sec data
 
     // get a ptr to TimeSeries buffer
-    auto ts = tsc.getTS(sec1);
+    auto ts = tsc.getTS(g_B51_sec1);
 
     // get const iterator pointing to the begining of the buffer, i.e. the oldest data sample
     auto iter = ts->cbegin();
@@ -257,7 +257,7 @@ void print_timeseries(){
     // Let's do same for 30 sec TimeSeries
     // just to make it a bit differetnt let't print human-readable date/time instead of time-stamp
 
-    ts = tsc.getTS(sec30);
+    ts = g_B51_tsc.getTS(g_B51_sec30);
     iter = ts->cbegin();
     cnt = 10;    // we need only 10 samples
     iter += ts->getSize() - cnt;
@@ -277,7 +277,7 @@ void print_timeseries(){
     }
 
     // Same for 5 min TimeSeries
-    ts = tsc.getTS(sec30);
+    ts = g_B51_tsc.getTS(g_B51_sec30);
     iter = ts->cbegin();
     cnt = 10;    // we need only 10 samples
     iter += ts->getSize() - cnt;
@@ -302,7 +302,7 @@ void print_timeseries(){
 };
 
 // function is triggered by a timer each 5 sec
-void print_wait4data(void*){
+void B51_print_wait4data(void*){
     static unsigned cnt = 60;
     Serial.print("Pls, wait, collecting data for ");
     Serial.print(cnt);
@@ -311,6 +311,6 @@ void print_wait4data(void*){
     if (!cnt) {
         cnt = 60;
         // print our collected data
-        print_timeseries();
+        B51_print_timeseries();
     }
 };
