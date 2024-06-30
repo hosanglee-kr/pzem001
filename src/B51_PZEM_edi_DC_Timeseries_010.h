@@ -16,14 +16,8 @@ GitHub: https://github.com/vortigont/pzem-edl
 #include <ctime>
 #include "esp_sntp.h"
 
-/*
-    This example shows how to collect TimeSeries data for PZEM metrics
-    Pls, check previous examples for basic operations
-
-*/
-
-
-
+// This example shows how to collect TimeSeries data for PZEM metrics
+// Pls, check previous examples for basic operations
 // For this example we need an internet connection to get time from NTP server
 
 const char* g_B51_ssid     = "your-ssid";
@@ -46,10 +40,10 @@ using namespace pz004;                  // we will need this namespace for PZEM0
 UartQ *g_B51_qport;
 
 // Also we need a placeholder for PZEM004 object
-PZ004 *g_B51_pz;
+PZ004 *g_B51_pz004;
 
 // Container object for TimeSeries data
-TSContainer<pz004::metrics> g_B51_tsc;
+TSContainer<pz004::metrics> g_B51_tsc_pz004;
 
 // IDs for out time series buffers
 uint8_t g_B51_sec1, g_B51_sec30, g_B51_sec300;
@@ -76,12 +70,12 @@ void B51_init(){
     g_B51_pz = new PZ004(G_B51_PZEM_ID);
 
     // and link our port with PZEM object
-    g_B51_pz->attachMsgQ(g_B51_qport);
+    g_B51_pz004->attachMsgQ(g_B51_qport);
 
     // one last step - we must start PortQ tasks to handle messages
     g_B51_qport->startQueues();
     // enable polling
-    if (g_B51_pz->autopoll(true))
+    if (g_B51_pz004->autopoll(true))
         Serial.println("Autopolling enabled");
     else
         Serial.println("Sorry, can't autopoll somehow :(");
@@ -174,19 +168,19 @@ void B51_setup_timeseries(struct timeval *t)
      * Each sample takes about 28 bytes of (SPI)-RAM, it's not a problem to store thouthands if you have SPI-RAM
      * 
      */
-    g_B51_sec1 = g_B51_tsc.addTS(300, time(nullptr) /* current timestamp*/, 1 /* second interval*/, "TimeSeries 1 Second" /* Mnemonic descr*/ );
+    g_B51_sec1 = g_B51_tsc_pz004.addTS(300, time(nullptr) /* current timestamp*/, 1 /* second interval*/, "TimeSeries 1 Second" /* Mnemonic descr*/ );
     Serial.printf("Add per-second TimeSeries, id: %d\n", g_B51_sec1);
 
     /**
      * the same for 30-seconds interval, 240 samples totals, will keep data for 120 min
      */
-    g_B51_sec30 = g_B51_tsc.addTS(240, time(nullptr) /* current timestamp*/, 10 /* second interval*/, "TimeSeries 30 Seconds" /* Mnemonic descr*/ );
+    g_B51_sec30 = g_B51_tsc_pz004.addTS(240, time(nullptr) /* current timestamp*/, 10 /* second interval*/, "TimeSeries 30 Seconds" /* Mnemonic descr*/ );
     Serial.printf("Add 30 second TimeSeries, id: %d\n", g_B51_sec30);
 
     /**
      * the same for 300-seconds interval, 288 samples totals, will keep data for 24 hours
      */
-    g_B51_sec300 = g_B51_tsc.addTS(288, time(nullptr) /* current timestamp*/, 300 /* second interval*/, "TimeSeries 5 Min" /* Mnemonic descr*/ );
+    g_B51_sec300 = g_B51_tsc_pz004.addTS(288, time(nullptr) /* current timestamp*/, 300 /* second interval*/, "TimeSeries 5 Min" /* Mnemonic descr*/ );
     Serial.printf("Add 5 min TimeSeries, id: %d\n", g_B51_sec300);
 
     // check memory usage, if SPI-RAM is available on board, than TS will allocate buffer in SPI-RAM
@@ -200,10 +194,10 @@ void B51_setup_timeseries(struct timeval *t)
      * to collect metrics data and push it to TSContainer
      * 
      */
-    auto ref = &g_B51_tsc;    // a ref of our Container to feed it to lambda function
-    g_B51_pz->attach_rx_callback([ref](uint8_t pzid, const RX_msg* m){
+    auto ref = &g_B51_tsc_pz004;    // a ref of our Container to feed it to lambda function
+    g_B51_pz004->attach_rx_callback([ref](uint8_t pzid, const RX_msg* m){
         // obtain a pointer to objects metrics and push data to TS container marking it with current timestamp
-        ref->push(*(g_B51_pz->getMetricsPZ004()), time(nullptr));
+        ref->push(*(g_B51_pz004->getMetricsPZ004()), time(nullptr));
     });
 
     // here I will set a timer to do printing task to serial
@@ -220,7 +214,7 @@ void B51_print_timeseries(){
     // Process 1 sec data
 
     // get a ptr to TimeSeries buffer
-    auto ts = g_B51_tsc.getTS(g_B51_sec1);
+    auto ts = g_B51_tsc_pz004.getTS(g_B51_sec1);
 
     // get const iterator pointing to the begining of the buffer, i.e. the oldest data sample
     auto iter = ts->cbegin();
@@ -257,7 +251,7 @@ void B51_print_timeseries(){
     // Let's do same for 30 sec TimeSeries
     // just to make it a bit differetnt let't print human-readable date/time instead of time-stamp
 
-    ts = g_B51_tsc.getTS(g_B51_sec30);
+    ts = g_B51_tsc_pz004.getTS(g_B51_sec30);
     iter = ts->cbegin();
     cnt = 10;    // we need only 10 samples
     iter += ts->getSize() - cnt;
@@ -277,7 +271,7 @@ void B51_print_timeseries(){
     }
 
     // Same for 5 min TimeSeries
-    ts = g_B51_tsc.getTS(g_B51_sec30);
+    ts = g_B51_tsc_pz004.getTS(g_B51_sec30);
     iter = ts->cbegin();
     cnt = 10;    // we need only 10 samples
     iter += ts->getSize() - cnt;
