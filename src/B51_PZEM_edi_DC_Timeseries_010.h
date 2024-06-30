@@ -67,7 +67,7 @@ void B51_init(){
     g_B51_qport = new UartQ(G_B51_PZEM_UART_PORT, G_B51_RX_PIN, G_B51_TX_PIN);
 
     // Now let's create a PZEM004 object
-    g_B51_pz = new PZ004(G_B51_PZEM_ID);
+    g_B51_pz004 = new PZ004(G_B51_PZEM_ID);
 
     // and link our port with PZEM object
     g_B51_pz004->attachMsgQ(g_B51_qport);
