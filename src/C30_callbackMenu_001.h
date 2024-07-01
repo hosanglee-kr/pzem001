@@ -2,7 +2,7 @@
 #include "espasyncbutton.hpp"
 
 #define G_C30_BUTTON_1  GPIO_NUM_0                 // Set GPIO for the button #1
-#define G_C30_BUTTON_2  GPIO_NUM_35                // Set GPIO for the button #2
+#define G_C30_BUTTON_2  GPIO_NUM_10	//GPIO_NUM_35                // Set GPIO for the button #2
 
 using ESPButton::event_t;
 
@@ -10,7 +10,7 @@ using ESPButton::event_t;
 
 /**
  * @brief GPIOButton object construtor has the following parameters
- * 
+ *
  * @param gpio - GPIO number
  * @param logicLevel - Logic level state of the gpio when button is in 'PRESSED' state, LOW or HIGHT
  * @param pull - GPIO pull mode as defined in   https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html#_CPPv416gpio_pull_mode_t
@@ -23,15 +23,15 @@ using ESPButton::event_t;
 
 /**
  * @brief gpio mapped button with Logic level LOW, i.e. button shorts gpio to the ground, gpio must be pulled high
- * 
- * @return GPIOButton<ESPEventPolicy> 
+ *
+ * @return GPIOButton<ESPEventPolicy>
  */
 GPIOButton<ESPEventPolicy> g_C30_b1(G_C30_BUTTON_1, LOW);
 
 /**
  * @brief gpio mapped button with Logic level LOW, i.e. button shorts gpio to the ground, gpio must be pulled high
- * 
- * @return GPIOButton<ESPEventPolicy> 
+ *
+ * @return GPIOButton<ESPEventPolicy>
  */
 GPIOButton<ESPEventPolicy> g_C30_b2(G_C30_BUTTON_2, LOW);
 
@@ -39,7 +39,7 @@ GPIOButton<ESPEventPolicy> g_C30_b2(G_C30_BUTTON_2, LOW);
 /**
  * @brief Button callback menu object
  * it will maintain callback options for a group of button events
- * 
+ *
  */
 ButtonCallbackMenu g_C30_menu;
 
@@ -69,7 +69,7 @@ void C30_init(){
                             // this lambda will simply translate loop events into btn_callback_t callback function
                             [](void* handler_args, esp_event_base_t base, int32_t id, void* event_data){
                                 g_C30_menu.handleEvent(ESPButton::int2event_t(id), reinterpret_cast<EventMsg*>(event_data));
-                            }, 
+                            },
                             NULL, NULL)
                 );
 

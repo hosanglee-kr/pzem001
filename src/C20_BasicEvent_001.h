@@ -4,7 +4,7 @@
 
 // we will use two buttons for our demo
 #define G_C20_BUTTON_1  GPIO_NUM_0                 // Set GPIO for the button #1
-#define G_C20_BUTTON_2  GPIO_NUM_35                // Set GPIO for the button #2
+#define G_C20_BUTTON_2  GPIO_NUM_10		//GPIO_NUM_35                // Set GPIO for the button #2
 
 // shortcut alias to access ESPButton namespace
 using ESPButton::event_t;
@@ -25,7 +25,7 @@ static constexpr std::array<const char *, 8> event_name = {
 
 /**
  * @brief GPIOButton object construtor has the following parameters
- * 
+ *
  * @param gpio - GPIO number
  * @param logicLevel - Logic level state of the gpio when button is in 'PRESSED' state, LOW or HIGH
  * @param pull - GPIO pull mode as defined in   https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html#_CPPv416gpio_pull_mode_t
@@ -37,15 +37,15 @@ static constexpr std::array<const char *, 8> event_name = {
 
 /**
  * @brief gpio mapped button with Logic level LOW, i.e. button shorts gpio to the ground, gpio must gpio will be pulled high via internal pull-up resistor
- * 
- * @return GPIOButton<ESPEventPolicy> 
+ *
+ * @return GPIOButton<ESPEventPolicy>
  */
 GPIOButton<ESPEventPolicy> g_C20_b1(G_C20_BUTTON_1, LOW);
 
 /**
  * @brief gpio mapped button with Logic level LOW, i.e. button shorts gpio to the ground, gpio must be pulled high
- * 
- * @return GPIOButton<ESPEventPolicy> 
+ *
+ * @return GPIOButton<ESPEventPolicy>
  */
 GPIOButton<ESPEventPolicy> g_C20_b2(G_C20_BUTTON_2, LOW);
 
@@ -53,7 +53,7 @@ GPIOButton<ESPEventPolicy> g_C20_b2(G_C20_BUTTON_2, LOW);
 /**
  * @brief call-back function declaration that will subsribe to the button events
  * for the details on ESP Event loop operation, pls see https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/esp_event.html
- * 
+ *
  * @param handler_args - not used in this example, NULL here
  * @param base - EBTN_EVENTS identifier
  * @param id - event id

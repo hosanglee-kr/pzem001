@@ -2,19 +2,19 @@
 #include "espasyncbutton.hpp"
 
 
-#define G_C10_BUTTON_1  GPIO_NUM_35                 // Set GPIO for the button #1
+#define G_C10_BUTTON_1  GPIO_NUM_10	// GPIO_NUM_35                 // Set GPIO for the button #1
 
 
 /**
  * @brief AsyncEventButton is a very simple object that allows to create a GPIO-attached button
  * and a set of callback functions assigned to it.
  * For every kind of button event a dedicated callback function will trigger
- * 
+ *
  */
 
 /**
  * @brief AsyncEventButton object construtor has the following parameters
- * 
+ *
  * @param gpio - GPIO number
  * @param logicLevel - Logic level state of the gpio when button is in 'PRESSED' state, LOW or HIGH
  * @param pull - GPIO pull mode as defined in   https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html#_CPPv416gpio_pull_mode_t
@@ -45,7 +45,7 @@ void C10_BTN_1_on_multiclick(int32_t counter){
     Serial.printf("You clicked %d times!\n", counter);  // call-back parameter 'counter' contains number of cosecutive clicks
     Serial.println("You can try triple-click to enable auto-repeat on this button, or 5 times click to disable auto-repeat");
 
-    // On triple-click we enable auto-repeat action callback 
+    // On triple-click we enable auto-repeat action callback
     if (counter == 3){
         // lets enable auto-repeat for this button
         Serial.println("Auto-repeat on Long-Press enabled");
@@ -119,14 +119,14 @@ void C10_init(){
     g_C10_b1.onLongPress(C10_BTN_1_on_LongPress);
 
     // you can also assign functional callbacks or lamda functions
-    g_C10_b1.onClick([](){ 
+    g_C10_b1.onClick([](){
       Serial.println("Click!");
     });
 
     // enable button
     g_C10_b1.enable();
 
-    // let's pause for 2 seconds to let serial-monitor attach to the outpus after flash/reboot 
+    // let's pause for 2 seconds to let serial-monitor attach to the outpus after flash/reboot
     delay(2000);
 
     // Print help message

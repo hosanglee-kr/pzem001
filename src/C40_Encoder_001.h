@@ -3,7 +3,7 @@
 
 // define gpio's for pseudo-encoder
 #define G_40_BUTTON_DECREMENT  GPIO_NUM_0
-#define G_40_BUTTON_INCREMENT  GPIO_NUM_35
+#define G_40_BUTTON_INCREMENT  GPIO_NUM_10	//GPIO_NUM_35
 #define G_40_BUTTON_ACTION     GPIO_NUM_21
 
 
@@ -16,7 +16,7 @@ using ESPButton::event_t;
  * I use two push-buttons, Decrementing and Incrementing, to simulate a rotary encoder
  * on button press encoder will generate an event with counter value relative to number of increment/decrement actions
  * or 'virtual' position of an encoder
- * 
+ *
  * @param gpio_decr - GPIO number for decrementing button
  * @param gpio_incr - GPIO number for incrementing button
  * other constructor parameters are identical to GPIOButton class
@@ -25,13 +25,13 @@ PseudoRotaryEncoder g_C40_enc(G_40_BUTTON_DECREMENT, G_40_BUTTON_INCREMENT, LOW)
 
 /**
  * @brief also define an action button, will use it to switch encoder modes
- * 
+ *
  */
 AsyncEventButton g_C40_b1(G_40_BUTTON_ACTION, LOW);
 
 /**
  * @brief function declaration that will subsribe to encoder events
- * 
+ *
  * @param handler_args - not used in this example, NULL here
  * @param base - EBTN_ENC_EVENTS identifier
  * @param id - event id
