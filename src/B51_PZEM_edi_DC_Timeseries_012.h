@@ -14,6 +14,7 @@ GitHub: https://github.com/vortigont/pzem-edl
 
 #include <ctime>
 
+using namespace pzmbus;
 
 #include "esp_sntp.h"
 #include "pzem_edl.hpp"
@@ -30,11 +31,25 @@ const char* g_B51_NTP_ServerURL 			= "pool.ntp.org";
 const char* g_B51_NTP_TIMEZONE	 			= "KST-9";
 
 
+//const pzmodel_t model;					//  enum class pzmodel_t:uint8_t { none, pzem004v3, pzem003 };
+
+pzmbus::pzmodel_t g_B51_PZEM_model			= pzmbus::pzmodel_t::pzem003;
+
+// #define		G_B51_PZEM_MODEL				"PZ003"		//	DC: PZ003, AC : PZ004
+// #define		G_B51_PZEM_DUMMY				Y
+
+
+
+// #if G_B51_PZEM_MODEL	== "PZ003"
+
+// #elif G_B51_PZEM_MODEL	== "PZ004"
+
+// #endif
 
 #define		G_B51_PZEM_REFRESH_PERIOD_MS	1000		// default : 1000ms, min : 200ms
 
 
-using namespace pz004;												// we will need this namespace for PZEM004v3.0 device
+//using namespace pz004;												// we will need this namespace for PZEM004v3.0 device
 
 #define G_B51_PZEM_UART_PORT 				UART_NUM_1	 			// port attached to pzem (UART_NUM_1 is 2-nd uart port on ESP32, 1-st one is usually busy with USB-to-serial chip)
 
@@ -138,30 +153,6 @@ void B51_PZEM_init(){
 }
 
 
-void B51_NTP_init(){
-
-	// TimeSeries data needs a valid time source to function properly
-	// so we will set an NTP server to sync with first
-	// and a call-back function to get notification when time will be synchronized with NTP
-
-	// configure TimeZone and ntp server
-	configTzTime(g_B51_NTP_TIMEZONE, g_B51_NTP_ServerURL);
-
-
-	// set notification call-back function
-	// initializing TimeSeries buffer requires a timestamp sequence to start with.
-	// We use unixtime AKA "epoch time" - the number of seconds that have elapsed since 00:00:00 UTC on 1 January 1970, the Unix epoch.
-	// For this we need synchronize with NTP before we can set a starting point for TimeSeries.
-	// So we postpone the configuration to the call-back function which will trigger once time synchronization from NTP is complete
-
-	// 알림 콜백 기능 설정
-	// TimeSeries 버퍼를 초기화하려면 시작하려면 타임스탬프 시퀀스가 ​​필요합니다.
-	// 우리는 Unixtime AKA "epoch 시간"을 사용합니다. 이는 Unix epoch인 1970년 1월 1일 UTC 00:00:00 이후 경과된 초 수입니다.
-	// 이를 위해 TimeSeries의 시작점을 설정하기 전에 NTP와 동기화해야 합니다.
-	// 따라서 NTP로부터의 동기화가 완료되면 트리거되는 콜백 기능에 대한 구성을 연기합니다.
-
-	sntp_set_time_sync_notification_cb(B51_NTP_sync_cb_timeseries);
-}
 
 void B51_init() {
 	// Serial.begin(115200);       // just an ordinary Serial console to interact with
@@ -202,7 +193,7 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 									  300						// s - number of entries to keep
 									, time(nullptr) 			// current timestamp : start_time - timestamp of TS creation
 									, 1 						// second interval period - sampling period, all samples that are pushed to TS with lesser interval will be either dropped or averaged if averaging function is provided
-									, "TimeSeries 1 Second" 	// descr - mnemonic description (pointer MUST be valid for the duraion of life-time, it won't be deep-copied)
+									, "TimeSeries - Interval: 1Sec, sample: 300" 	// descr - mnemonic description (pointer MUST be valid for the duraion of life-time, it won't be deep-copied)
 																// id - desired ID
 								);
 	Serial.printf("Add per-second TimeSeries, id: %d\n", g_B51_TsC_ID_001sec);
@@ -210,11 +201,11 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 	// the same for 30-seconds interval, 240 samples totals, will keep data for 120 min
 	g_B51_TsC_ID_030sec = g_B51_TsC_pz003.addTS(
 	//g_B51_TsC_ID_030sec = g_B51_TsC_pz004.addTS(
-									  240						// s - number of entries to keep
-									, time(nullptr) 			// current timestamp
-									, 30 						// second interval
-									, "TimeSeries 30 Seconds" 	// Mnemonic descr
-																// id - desired ID
+									  240											// s - number of entries to keep
+									, time(nullptr) 								// current timestamp
+									, 30 											// second interval
+									, "TimeSeries - Interval: 30Sec, sample: 240" 	// "TimeSeries 30 Seconds" 	// Mnemonic descr
+																					// id - desired ID
 								);
 	Serial.printf("Add 30 second TimeSeries, id: %d\n", g_B51_TsC_ID_030sec);
 
@@ -222,9 +213,9 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 	g_B51_TsC_ID_300sec = g_B51_TsC_pz003.addTS(
 	//g_B51_TsC_ID_300sec = g_B51_TsC_pz004.addTS(
 									  288
-									, time(nullptr) 			// current timestamp
-									, 300 						// second interval
-									, "TimeSeries 5 Min" 		// Mnemonic descr
+									, time(nullptr) 								// current timestamp
+									, 300 											// second interval
+									, "TimeSeries - Interval: 5Min, sample: 288"  	//"TimeSeries 5 Min" 		// Mnemonic descr
 								);
 	Serial.printf("Add 5 min TimeSeries, id: %d\n", g_B51_TsC_ID_300sec);
 
@@ -244,6 +235,8 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 		// obtain a pointer to objects metrics and push data to TS container marking it with current timestamp
 		// objects 메트릭에 대한 포인터를 얻고 현재 타임스탬프로 표시하는 TS 컨테이너에 데이터를 푸시합니다.
 		v_TsC_pz003_ref->push(*(g_B51_pz003->getMetricsPZ003()), time(nullptr));
+		//v_TsC_pz003_ref->push(*(g_B51_pz003->getMetricsPZ003()), time(nullptr));
+
 		//v_TsC_pz004_ref->push(*(g_B51_pz004->getMetricsPZ004()), time(nullptr));
 	});
 
@@ -484,6 +477,30 @@ void B51_WIFI_Connect(){
 }
 
 
+void B51_NTP_init(){
+
+	// TimeSeries data needs a valid time source to function properly
+	// so we will set an NTP server to sync with first
+	// and a call-back function to get notification when time will be synchronized with NTP
+
+	// configure TimeZone and ntp server
+	configTzTime(g_B51_NTP_TIMEZONE, g_B51_NTP_ServerURL);
+
+
+	// set notification call-back function
+	// initializing TimeSeries buffer requires a timestamp sequence to start with.
+	// We use unixtime AKA "epoch time" - the number of seconds that have elapsed since 00:00:00 UTC on 1 January 1970, the Unix epoch.
+	// For this we need synchronize with NTP before we can set a starting point for TimeSeries.
+	// So we postpone the configuration to the call-back function which will trigger once time synchronization from NTP is complete
+
+	// 알림 콜백 기능 설정
+	// TimeSeries 버퍼를 초기화하려면 시작하려면 타임스탬프 시퀀스가 ​​필요합니다.
+	// 우리는 Unixtime AKA "epoch 시간"을 사용합니다. 이는 Unix epoch인 1970년 1월 1일 UTC 00:00:00 이후 경과된 초 수입니다.
+	// 이를 위해 TimeSeries의 시작점을 설정하기 전에 NTP와 동기화해야 합니다.
+	// 따라서 NTP로부터의 동기화가 완료되면 트리거되는 콜백 기능에 대한 구성을 연기합니다.
+
+	sntp_set_time_sync_notification_cb(B51_NTP_sync_cb_timeseries);
+}
 void B51_ESP32_MEMORY_info_print(){
 	// print memory stat
 	Serial.printf("SRAM Heap total: %d, free Heap %d\n"				, ESP.getHeapSize(), ESP.getFreeHeap());

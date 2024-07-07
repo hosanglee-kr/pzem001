@@ -29,6 +29,11 @@
 #endif
 
 
+#define			B040			//	B40_PZEM_MixedPool_001
+#ifdef		B040
+	#include "B40_PZEM_MixedPool_001.h"
+#endif
+
 //#define			B050		// 	05_TimeSeries	:  : Build-fail
 #ifdef		B050
 	#include "B50_PZEM_edi_DC_Timeseries_003.h"
@@ -36,7 +41,8 @@
 
 #define			B051		// 	05_TimeSeries	:  : Build-fail
 #ifdef		B051
-	#include "B51_PZEM_edi_DC_Timeseries_011.h"
+	#include "B51_PZEM_edi_DC_Timeseries_012.h"
+	//#include "B51_PZEM_edi_DC_Timeseries_011.h"
 #endif
 
 
@@ -91,8 +97,13 @@ void setup() {
 		B20_Init();
 	#endif
 
+	#ifdef B040
+		B40_init();
+	#endif
+
+
 	#ifdef B050
-		B50_PZEM_Init();
+		B50_init();
 	#endif
 
 	#ifdef B051
@@ -135,8 +146,12 @@ void loop() {
 
 	#endif
 
+	#ifdef B040
+		B40_run();
+	#endif
+
 	#ifdef B050
-		B50_PZEM_run();
+		B50_run();
 	#endif
 
 	#ifdef B051
