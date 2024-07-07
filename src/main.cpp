@@ -1,8 +1,14 @@
 #include <Arduino.h>
 
 
-//#define		B010				//	02_SinglePZEM003	: Build-Ok
-#ifdef		B010
+#define 	DBG_PROGRESS1
+#define		DBG_ERROR
+
+#include "W10_Wifi_001.h"
+
+
+//#define		BB010				//	02_SinglePZEM003	: Build-Ok
+#ifdef		BB010
 	#include "B10_PZEM_edl_DC_Single_001.h"
 #endif
 
@@ -23,14 +29,14 @@
 #endif
 
 
-#define			B050		// 	05_TimeSeries	:  : Build-fail
+//#define			B050		// 	05_TimeSeries	:  : Build-fail
 #ifdef		B050
 	#include "B50_PZEM_edi_DC_Timeseries_003.h"
 #endif
 
 #define			B051		// 	05_TimeSeries	:  : Build-fail
 #ifdef		B051
-	#include "B51_PZEM_edi_DC_Timeseries_010.h"
+	#include "B51_PZEM_edi_DC_Timeseries_011.h"
 #endif
 
 
@@ -39,22 +45,22 @@
 	#include "B70_PZEM_CLI_002.h"
 #endif
 
-#define			C010		//  
+//#define			C010		//
 #ifdef		C010
 	#include "C10_ESP_AsyncEvent_Button_001.h"
 #endif
 
-#define			C020		//  
+//#define			C020		//
 #ifdef		C020
 	#include "C20_BasicEvent_001.h"
 #endif
 
-#define			C030		//  
+//#define			C030		//
 #ifdef		C030
 	#include "C30_callbackMenu_001.h"
 #endif
 
-#define			C040		//  
+//#define			C040		//
 #ifdef		C040
 	#include "C40_Encoder_001.h"
 #endif
@@ -64,7 +70,12 @@ void setup() {
 
 	Serial.begin(115200);	 // just an ordinary Serial console to interact with
 
-	#ifdef B010
+
+	W10_T2_Wifi_init();
+
+	delay(1000);
+
+	#ifdef BB010
 		B10_Init();
 	#endif
 
@@ -89,7 +100,7 @@ void setup() {
 	#endif
 
 
-	
+
 	#ifdef	B070
 		B70_PZEM_CLI_init();
 	#endif
@@ -109,11 +120,11 @@ void setup() {
 	#ifdef	C040
 		C40_init();
 	#endif
-	
+
 }
 
 void loop() {
-	#ifdef B010
+	#ifdef BB010
 		B10_run();
 	#endif
 
@@ -131,7 +142,7 @@ void loop() {
 	#ifdef B051
 		B51_run();
 	#endif
-	
+
 	#ifdef	B070
 		B70_PZEM_CLI_run();
 	#endif
@@ -148,6 +159,6 @@ void loop() {
 	#ifdef	C040
 		C40_run();
 	#endif
-	
+
 }
 
