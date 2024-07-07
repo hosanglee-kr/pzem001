@@ -37,14 +37,14 @@ jobs:
           VERSION: ${{ steps.get_version.outputs.version-without-v }}
         run: pio run
 
-      - name: Prepare Release Assets 1
+      - name: Prepare Release Assets 1 - install rename
         run: |
           sudo apt install rename
       
       #git update-index --chmod=+x prepare_deploy.sh
-      - name: Prepare Release Assets 2
+      - name: Prepare Release Assets 2 - prepare_deploy.sh
         run: |
-             ./prepare_deploy.sh
+             bash ./prepare_deploy.sh
       - name: Get upload url
         id: release-id
         run: |
