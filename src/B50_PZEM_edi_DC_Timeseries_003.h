@@ -96,9 +96,9 @@ void B50_PZEM_Test1(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 		} while(--times);
 	*/
 
-	
+
 	// Serial.println("Release sampler");
-	
+
 	// //g_B50_PZ003->ts = new TSNode<pz004::metrics>(512);
 	// //auto t = g_B50_PZ003->ts;
 	// g_B50_PZ003->ts = nullptr;
@@ -198,7 +198,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 
 	const TimeSeries<pz003::metrics>* ts2 = p_ts_Container->getTS(p_ts_Container_id);
 
-  
+
 	// // No iterator
 	// for (int i = 0; i != p_ts_Container->getTSsize(); ++i){ //} -> ->ts->size; ++i){
 	// 	auto d = g_B50_PZ003->ts->get()[i];
@@ -211,7 +211,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 
 }
 
-void B50_PZEM_Init() {
+void B50_Init() {
 	Serial.printf("\n\n\n\tPZEM004 TimeSeries example\n\n");
 
 	B50_MEMORY_Print();
@@ -369,7 +369,7 @@ void B50_PZEM_Init() {
 	}
 }
 
-void B50_PZEM_run() {
+void B50_run() {
 	for (;;) {
 		delay(1000);
 	}
