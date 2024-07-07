@@ -19,6 +19,7 @@ jobs:
         matrix:
           environments:
             - "esp32doit-devkit-v1"
+            - "esp32-c3-super_mini"
           #  - "esp32-s3-devkitm-1"
 
     runs-on: ubuntu-latest
