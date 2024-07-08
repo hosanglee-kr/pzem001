@@ -5,7 +5,7 @@
 
 #include <ctime>
 
-using namespace pzmbus;
+//using namespace pzmbus;
 
 #include "esp_sntp.h"
 #include "pzem_edl.hpp"
@@ -15,25 +15,21 @@ using namespace pzmbus;
 // Pls, check previous examples for basic operations
 // For this example we need an internet connection to get time from NTP server
 
-const char* g_B51_ssid		 					= "2G_1";
-const char* g_B51_password	 					= "65641077";
+// const char* g_B51_ssid		 					= "2G_1";
+// const char* g_B51_password	 					= "65641077";
 
 const char* g_B51_NTP_ServerURL 				= "pool.ntp.org";
 const char* g_B51_NTP_TIMEZONE	 				= "KST-9";
 
-#define		G_B51_PZEM_REFRESH_PERIOD_MS		1000		// default : 1000ms, min : 200ms
+
+#define		G_B51_PZEM_REFRESH_PERIOD_MS		1000					// default : 1000ms, min : 200ms
 
 //using namespace pz004;												// we will need this namespace for PZEM004v3.0 device
 
 #define 	G_B51_PZEM_UART_PORT 				UART_NUM_1	 			// port attached to pzem (UART_NUM_1 is 2-nd uart port on ESP32, 1-st one is usually busy with USB-to-serial chip)
 
-#define 	G_B51_RX_PIN		 				22	 					// custom RX pin number
-#define 	G_B51_TX_PIN		 				19	 					// custom TX pin number
-
-#define 	G_B51_PZEM_ID_PZ003		 			40
-#define 	G_B51_PZEM_ID_PZ003_DUMMY			41
-#define 	G_B51_PZEM_ID_PZ004		 			42	 					// this is a unique PZEM ID for reference, it is NOT slave MODBUS address, just some random id (we all know why '42' is THE number, right? :) )
-
+#define 	G_B51_PZEM_UART_RX_PIN		 		22	 					// custom RX pin number
+#define 	G_B51_PZEM_UART_TX_PIN		 		19	 					// custom TX pin number
 
 
 // first, we need a placeholder for UartQ object to handle RX/TX message queues
@@ -45,17 +41,9 @@ UartQ*		g_B51_qport;
 
 #define		G_B51_PZEM_DUMMY					1
 
+#if defined(G_B51_PZEM_MODEL_PZEM003)
+	#define 	G_B51_PZEM_ID_PZ003		 			40
 
-#if defined(G_B51_PZEM_MODEL_PZEM004V3)
-	 #if defined(G_B51_PZEM_DUMMY)
-		DummyPZ004*						g_B51_Pzem;
-	#else
-		PZ004*							g_B51_Pzem;
-	#endif
-
-	// Container object for TimeSeries data
-	TSContainer<pz004::metrics> 		g_B51_Pzem_TsC;
-#elif defined(G_B51_PZEM_MODEL_PZEM003)
 	#if defined(G_B51_PZEM_DUMMY)
 		DummyPZ003*						g_B51_Pzem;
 	#else
@@ -64,6 +52,20 @@ UartQ*		g_B51_qport;
 
 	// Container object for TimeSeries data
 	TSContainer<pz003::metrics> 		g_B51_Pzem_TsC;
+
+#elif defined(G_B51_PZEM_MODEL_PZEM004V3)
+	#define 	G_B51_PZEM_ID_PZ004		 			41	 					// this is a unique PZEM ID for reference, it is NOT slave MODBUS address, just some random id (we all know why '42' is THE number, right? :) )
+
+	 #if defined(G_B51_PZEM_DUMMY)
+		DummyPZ004*						g_B51_Pzem;
+	#else
+		PZ004*							g_B51_Pzem;
+	#endif
+
+	// Container object for TimeSeries data
+	TSContainer<pz004::metrics> 		g_B51_Pzem_TsC;
+
+
 #endif
 
 // IDs for out time series buffers
@@ -74,7 +76,7 @@ uint8_t						g_B51_TsC_ID_300sec;
 // I need a timer to do console printing
 TimerHandle_t				g_B51_TimerHandle_5sec;
 
-void B51_WIFI_Connect();
+//void B51_WIFI_Connect();
 void B51_NTP_init();
 
 
@@ -89,19 +91,22 @@ void B51_ESP32_MEMORY_info_print();
 
 
 void B51_PZEM_init(){
+
+	//Serial.printf("\n\n\n\t B51 PZEM Timeseries example\n\n");
+
 	// Create new serial Q object attached to specified gpios
-	g_B51_qport 		= new UartQ(G_B51_PZEM_UART_PORT, G_B51_RX_PIN, G_B51_TX_PIN);
+	g_B51_qport 		= new UartQ(G_B51_PZEM_UART_PORT, G_B51_PZEM_UART_RX_PIN, G_B51_PZEM_UART_TX_PIN);
 
 	// Now let's create a PZEM004 object
 	#if defined(G_B51_PZEM_MODEL_PZEM004V3)
 		#if defined(G_B51_PZEM_DUMMY)
-			g_B51_Pzem 		= new DummyPZ004(G_B51_PZEM_ID_PZ004_DUMMY);
+			g_B51_Pzem 		= new DummyPZ004(G_B51_PZEM_ID_PZ004);
 		#else
 			g_B51_Pzem 		= new PZ004(G_B51_PZEM_ID_PZ004);
 		#endif
 	#elif defined(G_B51_PZEM_MODEL_PZEM003)
 		#if defined(G_B51_PZEM_DUMMY)
-			g_B51_Pzem 		= new DummyPZ003(G_B51_PZEM_ID_PZ003_DUMMY);
+			g_B51_Pzem 		= new DummyPZ003(G_B51_PZEM_ID_PZ003);
 		#else
 			g_B51_Pzem 		= new PZ003(G_B51_PZEM_ID_PZ003);
 		#endif
@@ -134,7 +139,7 @@ void B51_PZEM_init(){
 
 void B51_init() {
 
-	Serial.printf("\n\n\n\tPZEM004 TimeSeries example\n\n");
+	Serial.printf("\n\n\n\t B51 v14 TimeSeries example\n\n");
 
 	B51_PZEM_init();
 
@@ -166,12 +171,11 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 	// Each sample takes about 28 bytes of (SPI)-RAM, it's not a problem to store thouthands if you have SPI-RAM
 
 	g_B51_TsC_ID_001sec = g_B51_Pzem_TsC.addTS(
-	//g_B51_TsC_ID_001sec = g_B51_TsC_pz004.addTS(
-									  300						// s - number of entries to keep
-									, time(nullptr) 			// current timestamp : start_time - timestamp of TS creation
-									, 1 						// second interval period - sampling period, all samples that are pushed to TS with lesser interval will be either dropped or averaged if averaging function is provided
-									, "TimeSeries - Interval: 1Sec, sample: 300" 	// descr - mnemonic description (pointer MUST be valid for the duraion of life-time, it won't be deep-copied)
-																// id - desired ID
+									  300											// s - number of entries to keep
+									, time(nullptr) 								// current timestamp : start_time - timestamp of TS creation
+									, 1 											// second interval period - sampling period, all samples that are pushed to TS with lesser interval will be either dropped or averaged if averaging function is provided
+									, "TimeSeries - Intv: 1S sec, sample: 300, 5 Min" 	// descr - mnemonic description (pointer MUST be valid for the duraion of life-time, it won't be deep-copied)
+																					// id - desired ID
 								);
 	Serial.printf("Add per-second TimeSeries, id: %d\n", g_B51_TsC_ID_001sec);
 
@@ -180,18 +184,19 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 									  240											// s - number of entries to keep
 									, time(nullptr) 								// current timestamp
 									, 30 											// second interval
-									, "TimeSeries - Interval: 30Sec, sample: 240" 	// "TimeSeries 30 Seconds" 	// Mnemonic descr
+									, "TimeSeries - Intv: 30 Sec, sample: 240, 120 Min" 	// "TimeSeries 30 Seconds" 	// Mnemonic descr
 																					// id - desired ID
 								);
 	Serial.printf("Add 30 second TimeSeries, id: %d\n", g_B51_TsC_ID_030sec);
 
 	// the same for 300-seconds interval, 288 samples totals, will keep data for 24 hours
+
 	g_B51_TsC_ID_300sec = g_B51_Pzem_TsC.addTS(
 	//g_B51_TsC_ID_300sec = g_B51_TsC_pz004.addTS(
-									  288
-									, time(nullptr) 								// current timestamp
-									, 300 											// second interval
-									, "TimeSeries - Interval: 5Min, sample: 288"  	//"TimeSeries 5 Min" 		// Mnemonic descr
+									  360
+									, time(nullptr) 										// current timestamp
+									, 10 													// second interval
+									, "TimeSeries - Intv: 10 Sec, sample: 360, 60 Min"  	//"TimeSeries 5 Min" 		// Mnemonic descr
 								);
 	Serial.printf("Add 5 min TimeSeries, id: %d\n", g_B51_TsC_ID_300sec);
 
@@ -234,43 +239,79 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 };
 
 
+#define 	DEBUG_TEST1
+
+
 void B51_print_timeseries_each(uint8_t p_B51_TsC_ID){
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-010");
+	#endif
 
 	struct tm v_tmstruct;
 	char v_dtime_char[30];
 
 	////////////////////////////////////////////////////
 
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-020");
+	#endif
+
 	// get a ptr to TimeSeries buffer
 	auto   v_ts	= g_B51_Pzem_TsC.getTS(p_B51_TsC_ID);
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-030");
+	#endif
 
 	// get const iterator pointing to the begining of the buffer, i.e. the oldest data sample
 	auto   v_iter = v_ts->cbegin();
 
-
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-040");
+	#endif
 
 	// for the sake of simplicity so no to clotter terminal with printin all 300 samples from buffer let's print only 10 most recent samples
 	// it will also show how to manipulate with iterators
 
-	size_t v_cnt	= 10;  // we need only 10 samples
+	size_t v_cnt	= 360; 	//10 	// we need only 10 samples
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-050");
+	#endif
 
 	// now we need to shift the iterator from the beginning of the buffer to 'end'-10, i.e. 10 most recent items from the end
 	v_iter += v_ts->getSize() - v_cnt;
 
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-050");
+	#endif
 
 	Serial.printf("TimeSeries buffer %s has %d items, will only get last %d\n", v_ts->getDescr(), v_ts->getSize(), v_cnt);
 
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-060");
+	#endif
 
 	// let's run the iterator and print sampled data
 
 	#if defined(G_B51_PZEM_MODEL_PZEM004V3)
-		Serial.println("TimeStamp\t\tdV\tmA\tW\tWh\tdHz\tpf");
+		Serial.println("TimeStamp,\t\tV,\tA,\tW,\tWh,\tdHz,\tpf");
+		//Serial.println("TimeStamp\t\tdV\tmA\tW\tWh\tdHz\tpf");
 	#elif defined(G_B51_PZEM_MODEL_PZEM003)
-		Serial.println("TimeStamp\t\tdV\tmA\tW\tWh");
+		Serial.println("TimeStamp,\t\tV,\tA,\tW,\tWh");
+		//Serial.println("TimeStamp\t\tdV\tmA\tW\tWh");
 	#endif
 
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-070");
+	#endif
 
 	for (v_iter; v_iter != v_ts->cend(); ++v_iter) {
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-080");
+		#endif
 
 		// now I need to get the timestamp for each sample
 		// TS buffer only stores timestamp for the last sample, not for the each item,
@@ -278,7 +319,15 @@ void B51_print_timeseries_each(uint8_t p_B51_TsC_ID){
 
 		std::time_t v_timestamp_lastupdate	= v_ts->getTstamp() - (v_ts->cend() - v_iter) * v_ts->getInterval();
 
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-090");
+		#endif
+
 		localtime_r(&v_timestamp_lastupdate, &v_tmstruct);
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-100");
+		#endif
 
 		//getLocalTime(&tmstruct, 5000);
 		sprintf(v_dtime_char,"%d-%02d-%02d %02d:%02d:%02d",
@@ -290,22 +339,53 @@ void B51_print_timeseries_each(uint8_t p_B51_TsC_ID){
 						v_tmstruct.tm_sec
 					);
 
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-110");
+		#endif
 
-		Serial.print(v_dtime_char);	Serial.print("\t");
+		Serial.print(v_dtime_char);	Serial.print(",\t");
 		//Serial.print(v_timestamp_lastupdate);	Serial.print("\t");
-		Serial.print(v_iter->voltage);			Serial.print("\t");
-		Serial.print(v_iter->current);			Serial.print("\t");
-		Serial.print(v_iter->power);			Serial.print("\t");
-		Serial.print(v_iter->energy);			Serial.print("\t");
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-120");
+		#endif
+
+		Serial.print(v_iter->voltage);			Serial.print(",\t");
+		Serial.print(v_iter->current);			Serial.print(",\t");
+		Serial.print(v_iter->power);			Serial.print(",\t");
+		Serial.print(v_iter->energy);			Serial.print(",\t");
+
+
+		// Serial.printf("%6.2f", v_iter->voltage);			Serial.print("\t");
+		// Serial.printf("%6.2f", v_iter->current);			Serial.print("\t");
+		// Serial.printf("%d", v_iter->power);					Serial.print("\t");
+		// Serial.printf("%d", v_iter->energy);				Serial.print("\t");
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-130");
+		#endif
+
+		// Serial.print(v_iter->voltage);			Serial.print("\t");
+		// Serial.print(v_iter->current);			Serial.print("\t");
+		// Serial.print(v_iter->power);				Serial.print("\t");
+		// Serial.print(v_iter->energy);			Serial.print("\t");
 		#if defined(G_B51_PZEM_MODEL_PZEM004V3)
 			Serial.print(v_iter->freq);				Serial.print("\t");
 			Serial.print(v_iter->pf);
 		#endif
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-140");
+		#endif
+
 		Serial.println();
 	}
 
 	// An example on how to export TS data in json format via WebServer pls see ESPEM Project https://github.com/vortigont/espem
 
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-150");
+	#endif
 }
 
 
@@ -342,45 +422,45 @@ void B51_print_wait4data(void*) {
 
 
 
-void B51_WIFI_Connect(){
+// void B51_WIFI_Connect(){
 
 
-	Serial.println();
-	Serial.print("[WiFi] Connecting to ");
-	Serial.println(g_B51_ssid);
+// 	Serial.println();
+// 	Serial.print("[WiFi] Connecting to ");
+// 	Serial.println(g_B51_ssid);
 
-	WiFi.begin(g_B51_ssid, g_B51_password);
+// 	WiFi.begin(g_B51_ssid, g_B51_password);
 
-	// Will try for about 10 seconds (20x 500ms)
-	int v_WIFI_tryDelay		 = 500;
-	int v_WIFI_numberOfTries 	= 20;
+// 	// Will try for about 10 seconds (20x 500ms)
+// 	int v_WIFI_tryDelay		 = 500;
+// 	int v_WIFI_numberOfTries 	= 20;
 
-	// Wait for the WiFi connection event
-	while (true) {
-		switch (WiFi.status()) {
-			case WL_CONNECTED:
-				Serial.println("[WiFi] WiFi is connected!");
-				Serial.print("[WiFi] IP address: ");
-				Serial.println(WiFi.localIP());
-				return;
-				break;
-			default:
-				Serial.print("[WiFi] WiFi Status: ");
-				Serial.println(WiFi.status());
-				break;
-		}
-		delay(v_WIFI_tryDelay);
+// 	// Wait for the WiFi connection event
+// 	while (true) {
+// 		switch (WiFi.status()) {
+// 			case WL_CONNECTED:
+// 				Serial.println("[WiFi] WiFi is connected!");
+// 				Serial.print("[WiFi] IP address: ");
+// 				Serial.println(WiFi.localIP());
+// 				return;
+// 				break;
+// 			default:
+// 				Serial.print("[WiFi] WiFi Status: ");
+// 				Serial.println(WiFi.status());
+// 				break;
+// 		}
+// 		delay(v_WIFI_tryDelay);
 
-		if (v_WIFI_numberOfTries <= 0) {
-			Serial.print("[WiFi] Failed to connect to WiFi!");
-			// Use disconnect function to force stop trying to connect
-			WiFi.disconnect();
-			return;
-		} else {
-			v_WIFI_numberOfTries--;
-		}
-	}
-}
+// 		if (v_WIFI_numberOfTries <= 0) {
+// 			Serial.print("[WiFi] Failed to connect to WiFi!");
+// 			// Use disconnect function to force stop trying to connect
+// 			WiFi.disconnect();
+// 			return;
+// 		} else {
+// 			v_WIFI_numberOfTries--;
+// 		}
+// 	}
+// }
 
 
 void B51_NTP_init(){
@@ -410,11 +490,14 @@ void B51_NTP_init(){
 void B51_ESP32_MEMORY_info_print(){
 	#ifdef DBG_PROGRESS1
 		// print memory stat
+		Serial.println("------------");
 		Serial.printf("SRAM Heap total: %d, free Heap %d\n"				, ESP.getHeapSize(), ESP.getFreeHeap());
 		Serial.printf("SPI-RAM heap total: %d, SPI-RAM free Heap %d\n"	, ESP.getPsramSize(), ESP.getFreePsram());
+		Serial.println("------------");
 
-		Serial.printf("ChipRevision %d, Cpu Freq %d, SDK Version %s\n"	, ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
-		Serial.printf("Flash Size %d, Flash Speed %d\n"					, ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
+		//Serial.printf("ChipRevision %d, Cpu Freq %d, SDK Version %s\n"	, ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
+		//Serial.printf("Flash Size %d, Flash Speed %d\n"					, ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
+
 	#endif
 }
 

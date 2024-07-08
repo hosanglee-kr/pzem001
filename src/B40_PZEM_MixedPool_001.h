@@ -102,7 +102,7 @@ void	B40_init() {
 
 	// Serial.begin(115200);       // just an ordinary Serial console to interact with
 
-	Serial.printf("\n\n\n\tPZEM multiple instance example\n\n");
+	Serial.printf("\n\n\n\t B40 PZEM MixedPool example\n\n");
 
 	// create a new PZPool object
 	g_B40_PZPool_Meters		  = new PZPool();

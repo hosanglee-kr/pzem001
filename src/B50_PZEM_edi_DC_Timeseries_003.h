@@ -212,7 +212,7 @@ void B50_PZEM_Test3(TSContainer<pz003::metrics>* p_ts_Container, uint8_t p_ts_Co
 }
 
 void B50_Init() {
-	Serial.printf("\n\n\n\tPZEM004 TimeSeries example\n\n");
+	Serial.printf("\n\n\n\tB50 v003 TimeSeries example\n\n");
 
 	B50_MEMORY_Print();
 
