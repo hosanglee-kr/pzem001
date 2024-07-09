@@ -11,6 +11,10 @@
 #include "pzem_edl.hpp"
 #include "timeseries.hpp"
 
+
+#include "B51_C20_AWEB_FFT2_002.h"
+
+
 // This example shows how to collect TimeSeries data for PZEM metrics
 // Pls, check previous examples for basic operations
 // For this example we need an internet connection to get time from NTP server
@@ -141,6 +145,12 @@ void B51_init() {
 
 	Serial.printf("\n\n\n\t B51 v14 TimeSeries example\n\n");
 
+	C20_FS_init();
+
+	C20_T2_AWeb_handle_init();
+
+	C20_T2_AWeb_init();
+
 	B51_PZEM_init();
 
 
@@ -177,7 +187,7 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 									, "TimeSeries - Intv: 1S sec, sample: 300, 5 Min" 	// descr - mnemonic description (pointer MUST be valid for the duraion of life-time, it won't be deep-copied)
 																					// id - desired ID
 								);
-	Serial.printf("Add per-second TimeSeries, id: %d\n", g_B51_TsC_ID_001sec);
+	Serial.printf("Add 1 second TimeSeries, id: %d\n", g_B51_TsC_ID_001sec);
 
 	// the same for 30-seconds interval, 240 samples totals, will keep data for 120 min
 	g_B51_TsC_ID_030sec = g_B51_Pzem_TsC.addTS(
@@ -240,6 +250,201 @@ void B51_NTP_sync_cb_timeseries(struct timeval* t) {
 
 
 #define 	DEBUG_TEST1
+
+
+void B51_timeseries_each_sendData(uint8_t p_B51_TsC_ID){
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-010");
+	#endif
+
+	struct tm v_tmstruct;
+	char v_dtime_char[30];
+
+	////////////////////////////////////////////////////
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-020");
+	#endif
+
+	// get a ptr to TimeSeries buffer
+	auto   v_ts	= g_B51_Pzem_TsC.getTS(p_B51_TsC_ID);
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-030");
+	#endif
+
+	// get const iterator pointing to the begining of the buffer, i.e. the oldest data sample
+	auto   v_iter = v_ts->cbegin();
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-040");
+	#endif
+
+	// for the sake of simplicity so no to clotter terminal with printin all 300 samples from buffer let's print only 10 most recent samples
+	// it will also show how to manipulate with iterators
+
+	size_t v_cnt	= 180; 	//10 	// we need only 10 samples
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-050");
+	#endif
+
+	// now we need to shift the iterator from the beginning of the buffer to 'end'-10, i.e. 10 most recent items from the end
+	v_iter += v_ts->getSize() - v_cnt;
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-050");
+	#endif
+
+	Serial.printf("TimeSeries buffer %s has %d items, will only get last %d\n", v_ts->getDescr(), v_ts->getSize(), v_cnt);
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-060");
+	#endif
+
+	// let's run the iterator and print sampled data
+
+	#if defined(G_B51_PZEM_MODEL_PZEM004V3)
+		Serial.println("TimeStamp,\t\tV,\tA,\tW,\tWh,\tdHz,\tpf");
+		//Serial.println("TimeStamp\t\tdV\tmA\tW\tWh\tdHz\tpf");
+	#elif defined(G_B51_PZEM_MODEL_PZEM003)
+		Serial.println("TimeStamp,\t\tV,\tA,\tW,\tWh");
+		//Serial.println("TimeStamp\t\tdV\tmA\tW\tWh");
+	#endif
+
+
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-070");
+	#endif
+
+	////////////////////////////////////////////
+	String v_json 	 = 	"{ \"fft2\":";
+	v_json 			+=	"[";
+
+	uint8_t v_count = 0;
+	/////////////////////////////////////////////////
+
+	for (v_iter; v_iter != v_ts->cend(); ++v_iter) {
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-080");
+		#endif
+
+		// now I need to get the timestamp for each sample
+		// TS buffer only stores timestamp for the last sample, not for the each item,
+		// so I need to calculate the time based on last timestamp, interval and counter
+
+		std::time_t v_timestamp_lastupdate	= v_ts->getTstamp() - (v_ts->cend() - v_iter) * v_ts->getInterval();
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-090");
+		#endif
+
+		localtime_r(&v_timestamp_lastupdate, &v_tmstruct);
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-100");
+		#endif
+
+		if (v_count > 0) {
+			v_json 	+= ", ";
+		}
+
+
+		//getLocalTime(&tmstruct, 5000);
+		sprintf(v_dtime_char,"%d-%02d-%02d %02d:%02d:%02d",
+						(v_tmstruct.tm_year)+1900,
+						(v_tmstruct.tm_mon)+1,
+						v_tmstruct.tm_mday,
+						v_tmstruct.tm_hour,
+						v_tmstruct.tm_min,
+						v_tmstruct.tm_sec
+					);
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-110");
+		#endif
+
+		Serial.print(v_dtime_char);	Serial.print(",\t");
+		//Serial.print(v_timestamp_lastupdate);	Serial.print("\t");
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-120");
+		#endif
+
+		Serial.print( (v_iter->voltage));			Serial.print(",\t");
+		Serial.print( (v_iter->current));			Serial.print(",\t");
+		Serial.print(v_iter->power);			Serial.print(",\t");
+		Serial.print(v_iter->energy);			Serial.print(",\t");
+
+
+		v_json += "{\"ts\":";
+		v_json += "\"" + String(v_dtime_char) + "\"";
+
+
+		v_json += ",\"dV\":";
+		v_json += "\"" + String(v_iter->voltage) + "\"";
+
+		v_json += ",\"mA\":";
+		v_json += String(v_iter->current);
+
+		v_json += ",\"W\":";
+		v_json += String(v_iter->power);
+
+		v_json += ",\"Wh\":";
+		v_json += String(v_iter->energy);
+
+
+		// Serial.printf("%6.2f", v_iter->voltage);			Serial.print("\t");
+		// Serial.printf("%6.2f", v_iter->current);			Serial.print("\t");
+		// Serial.printf("%d", v_iter->power);					Serial.print("\t");
+		// Serial.printf("%d", v_iter->energy);				Serial.print("\t");
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-130");
+		#endif
+
+
+		#if defined(G_B51_PZEM_MODEL_PZEM004V3)
+			Serial.print(v_iter->freq);				Serial.print("\t");
+			Serial.print(v_iter->pf);
+
+			v_json += ",\"Hz\":";
+			v_json += String(v_iter->freq, 0);
+			v_json += ",\"PF\":";
+			v_json += String(v_iter->pf, 0);
+		#endif
+
+		#ifdef DEBUG_TEST2
+			Serial.println("B51-140");
+		#endif
+
+		Serial.println();
+
+
+		v_json += "}";
+
+		v_count++;
+	}
+
+	v_json += "]";
+	v_json += "}";
+
+
+	Serial.println(" Send Json: Start ---------");
+	Serial.println(v_json);
+	Serial.println(" Send Json: End ---------");
+
+	g_C20_T2_AsyncWebSocket_FFT2.textAll(v_json.c_str(), v_json.length());
+
+	// An example on how to export TS data in json format via WebServer pls see ESPEM Project https://github.com/vortigont/espem
+
+	#ifdef DEBUG_TEST2
+		Serial.println("B51-150");
+	#endif
+}
 
 
 void B51_print_timeseries_each(uint8_t p_B51_TsC_ID){
@@ -350,8 +555,8 @@ void B51_print_timeseries_each(uint8_t p_B51_TsC_ID){
 			Serial.println("B51-120");
 		#endif
 
-		Serial.print(v_iter->voltage);			Serial.print(",\t");
-		Serial.print(v_iter->current);			Serial.print(",\t");
+		Serial.print( (v_iter->voltage/100), 2);			Serial.print(",\t");
+		Serial.print( (v_iter->current/100), 2);			Serial.print(",\t");
 		Serial.print(v_iter->power);			Serial.print(",\t");
 		Serial.print(v_iter->energy);			Serial.print(",\t");
 
@@ -391,7 +596,8 @@ void B51_print_timeseries_each(uint8_t p_B51_TsC_ID){
 
 // function is triggered by a timer each 5 sec
 void B51_print_wait4data(void*) {
-	static unsigned v_cnt = 60;
+	static unsigned v_cnt = 30;
+//	static unsigned v_cnt = 60;
 
 	Serial.print("Pls, wait, collecting data for ");
 	Serial.print(v_cnt);
@@ -400,18 +606,24 @@ void B51_print_wait4data(void*) {
 	v_cnt -= 5;
 
 	if (!v_cnt) {
-		v_cnt = 60;
+		v_cnt = 30;
+		//v_cnt = 60;
 
 
 		Serial.println();
 		Serial.println("=== Print TimeSeries data ===");
 
 		// function is triggered by a timer each minute
-		B51_print_timeseries_each(g_B51_TsC_ID_001sec);
+		// B51_print_timeseries_each(g_B51_TsC_ID_001sec);
 
-		B51_print_timeseries_each(g_B51_TsC_ID_030sec);
+		// B51_print_timeseries_each(g_B51_TsC_ID_030sec);
 
-		B51_print_timeseries_each(g_B51_TsC_ID_300sec);
+		// B51_print_timeseries_each(g_B51_TsC_ID_300sec);
+
+
+		//B51_timeseries_each_sendData(g_B51_TsC_ID_001sec);
+
+		B51_timeseries_each_sendData(g_B51_TsC_ID_030sec);
 
 		// // print our collected data
 		// B51_print_timeseries();
