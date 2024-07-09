@@ -241,7 +241,7 @@ int B21_PZEM_set_AutoPollConfig(uint8_t p_autopoll_enable, size_t p_autopoll_rat
 void	B21_Init() {
 	// Serial.begin(115200);       // just an ordinary Serial console to interact with
 
-	Serial.printf("\n\n\n\tPZEM multiple instance example\n\n");
+	Serial.printf("\n\n\n\tB21 PZEM multiple instance example\n\n");
 
 	g_B21_PZEM_Pools		  = new PZPool();
 

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>WebSocket Line Chart</title>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>   --> <!-- chart.js v4.4.2  -->
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Moment.js for date manipulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+
+</head>
+
+<body>
+	<div style="width: 80%;">
+		<canvas id="line-chart"></canvas>
+	</div>
+
+	<script>
+		//const ctx = document.getElementById('line-chart').getContext('2d');
+
+		chart = new Chart(document.getElementById("line-chart'"), {
+
+		//const chart = new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+					label: 'Real-time Data',
+					borderColor: 'rgba(255, 99, 132, 1)',
+					borderWidth: 2,
+					fill: false,
+					data: []
+				}]
+			},
+			options: {
+				responsive: true,
+				plugins: {
+					legend: {
+						display: true,
+						position: 'top',
+					},
+					title: {
+						display: true,
+						text: 'WebSocket Line Chart'
+					}
+				},
+				scales: {
+					x: {
+						type: 'time', // Set x axis type to time
+						time: {
+							//parser: 'YYYY-MM-DDTHH:mm:ss', // Specify timestamp format
+							parser: 'YYYY-MM-DD HH:mm:ss', // Specify timestamp format
+							tooltipFormat: 'll HH:mm', // Format for tooltip
+							unit: 'hour', // Display unit for labels (hourly)
+							displayFormats: {
+								hour: 'MM DD, HH:mm:ss' // Format for display on x axis
+							}
+						},
+						ticks: {
+							source: 'labels' // Use labels array as source for ticks
+						},
+					},
+					y: {
+						beginAtZero: true
+					}
+				}
+			}
+		});
+
+		webSocket = new WebSocket(`ws://${window.location.hostname}:90/ws`);
+		//const ws = new WebSocket('ws://localhost:8080');
+
+		webSocket.onmessage = function (event) {
+
+			//const data = JSON.parse(event.data);
+			var json_data = JSON.parse(event.data);
+			console.log("WS JSON.parsed:");
+
+			//console.log(json_data);
+
+			if (json_data.hasOwnProperty('timeA')){
+				var json_time_array = json_data.timeA;
+
+				console.log(json_time_array);
+
+
+				chart.data.labels.push(json_time_array.dt);
+
+				chart.data.datasets[0].data.push({
+					x: json_time_array.dt,
+					y: json_time_array.v
+				});
+
+				// Remove first data point if more than 10 points
+				if (chart.data.labels.length > 4078) {
+					chart.data.labels.shift();
+					chart.data.datasets[0].data.shift();
+				}
+
+				//chart.update();
+				chart.update();
+			}
+		};
+	</script>
+</body>
+
+</html>

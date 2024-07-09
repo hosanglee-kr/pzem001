@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.8, minimal-ui">
+	<meta name="theme-color" content="#36393E">
+
+	<meta name="description" content="Web Spectrum Analyzer">
+	<link rel="stylesheet" type="text/css" href="X25_style_v2.css">
+
+	<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js'></script>
+</head>
+
+<body onload="javascript:init()">
+	<nav>
+		<ul id="X25_Menu_ID" class="menu">
+			<!--
+			<li><a href="./IR">IR User v1</a></li>
+
+			<li><a href="./IR_UI_User">IR User v2</a></li>
+			<li><a href="./IR_UI_Admin">IR UI Admin</a></li>
+
+			<li><a href="./IRAdmin">IR Data Admin</a></li>
+
+
+			<li><a href="./fft2">FFT</a></li>
+			<li><a href="./SysAdmin">System Admin</a></li>
+			-->
+		</ul>
+	</nav>
+	<main>
+		<section>
+			<h3>ESP32 I2S Web Spectrum Analyzer</h3>
+			<div>
+				<style>
+					canvas {
+						width: 95%;
+						height: 95%;
+					}
+				</style>
+
+				<canvas id="chart"></canvas>
+				<!-- <canvas id="chart" width="1024" height="768"></canvas> -->
+			</div>
+		</section>
+	</main>
+
+	<!-- Adding a websocket to the client (webpage) -->
+	<script>
+		var webSocket, dataPlot;
+		var maxDataPoints = 20;
+		const maxValue = 200000000;
+		const maxLow = maxValue * 0.5;
+		const maxMedium = maxValue * 0.2;
+		const maxHigh = maxValue * 0.3;
+
+		function X25_Common_Get_Menu_HTML() {
+			xmlhttp = new XMLHttpRequest();
+			xmlhttp.open("GET", "/get_Menu_HTML", false);
+			xmlhttp.send();
+
+			document.getElementById("X25_Menu_ID").innerHTML = xmlhttp.responseText;
+		}
+
+		function init() {
+
+			X25_Common_Get_Menu_HTML();
+
+			//webSocket = new WebSocket(`ws://192.168.123.104:90/ws`);
+
+			webSocket = new WebSocket(`ws://${window.location.hostname}:90/ws`);
+
+			dataPlot = new Chart(document.getElementById("chart"), {
+				type: 'line',
+				data: {
+					labels: [],
+					datasets: [{
+						data: [],
+						label: "Low",
+						backgroundColor: "#D6E9C6"
+					},
+					{
+						data: [],
+						label: "Moderate",
+						backgroundColor: "#FAEBCC"
+					},
+					{
+						data: [],
+						label: "High",
+						backgroundColor: "#EBCCD1"
+					},
+					]
+				},
+				options: {
+					responsive: false,
+					animation: false,
+					scales: {
+						xAxes: [{
+							stacked: true,
+							ticks: {
+								fontColor: 'blue',
+								beginAtZero: true,
+								maxRotation: 90,
+								minRotation: 90,
+
+								//min: 80,
+								//max: 1000
+
+							}
+						}],
+						yAxes: [{
+							display: true,
+							stacked: true,
+							ticks: {
+								fontColor: 'blue',
+								fontSize:10,
+								beginAtZero: true,
+								min: 0,
+
+								// max: 500,
+								// stepSize: 10
+
+								//max: 120000,
+								//stepSize: 5000
+
+								// steps: 1000,
+								// stepValue: 500,
+								// max: maxValue
+							}
+						}]
+					}
+				}
+			});
+
+			webSocket.onclose = function(e) {
+				console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+				setTimeout(function() {
+										init();
+										},
+							1000);
+			};
+			webSocket.onmessage = function (event) {
+				//console.log("WS event");
+
+				var json_data = JSON.parse(event.data);
+				//console.log("WS JSON.parsed:");
+
+				//console.log(json_data);
+
+				if (json_data.hasOwnProperty('fft2')){
+					var json_fft2_array = json_data.fft2;
+					//console.log("WS JSON.parsed-fft2:");
+
+					//console.log(json_fft2_array);
+
+					dataPlot.data.labels = [];
+					dataPlot.data.datasets[0].data = [];
+					dataPlot.data.datasets[1].data = [];
+					dataPlot.data.datasets[2].data = [];
+
+					json_fft2_array.forEach(function (element) {
+
+						dataPlot.data.labels.push(element.ts);
+						//dataPlot.data.datasets[0].data.push(element.dB);
+						dataPlot.data.datasets[0].data.push(element.dV);
+						dataPlot.data.datasets[1].data.push(element.mA);
+						dataPlot.data.datasets[2].data.push(element.W);
+
+
+
+
+						//var lowValue = Math.min(maxLow, element.value);
+						//dataPlot.data.datasets[0].data.push(lowValue);
+
+						//var mediumValue = Math.min(Math.max(0, element.value - lowValue), maxMedium);
+						//dataPlot.data.datasets[1].data.push(mediumValue);
+
+						//var highValue = Math.max(0, element.value - lowValue - mediumValue);
+						//dataPlot.data.datasets[2].data.push(highValue);
+
+
+
+					});
+					dataPlot.update();
+				};
+
+
+
+			}
+		}
+
+	</script>
+</body>
+
+</html>

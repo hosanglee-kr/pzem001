@@ -29,7 +29,7 @@
 #endif
 
 
-#define			B040			//	B40_PZEM_MixedPool_001
+//#define			B040			//	B40_PZEM_MixedPool_001
 #ifdef		B040
 	#include "B40_PZEM_MixedPool_001.h"
 #endif
@@ -77,7 +77,6 @@ void setup() {
 
 
 	Serial.begin(115200);	 // just an ordinary Serial console to interact with
-
 
 	W10_T2_Wifi_init();
 

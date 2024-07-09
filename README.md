@@ -11,6 +11,9 @@ __[BUILD](/docs/BUILD.md) | [EXAMPLES](/examples/README.md) | [CHANGELOG](/CHANG
   <img src="docs/ESP32-C3 Super Mini pinout.jpg" width="1000" alt="docs/ESP32-C3 Super Mini pinout.jpg"/>
 </div>
 
+PZEM-003: Measuring Range 10A (Built-in Shunt)
+PZEM-017: Measuring Range 50A、100A、200A、300A (the current range is depend on the external shunt specification )
+
 
 This is an ESP32 Arduino/esp-idf library implementing communication interface for [PeaceFair](https://peacefair.aliexpress.com/store/1773456) **PZEM-004Tv3.0**/**PZEM-003** Energy monitor modules via MODBUS proto.
 

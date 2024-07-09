@@ -333,7 +333,7 @@ int B20_PZEM_set_AutoPollConfig(uint8_t p_autopoll_enable, size_t p_autopoll_rat
 void	B20_Init() {
 	// Serial.begin(115200);       // just an ordinary Serial console to interact with
 
-	Serial.printf("\n\n\n\tPZEM multiple instance example\n\n");
+	Serial.printf("\n\n\n\tB20 PZEM multiple instance example\n\n");
 
 	// create a new PZPool object
 	g_B20_PZEM_DC_Meters		  = new PZPool();
