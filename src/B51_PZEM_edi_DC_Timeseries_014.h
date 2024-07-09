@@ -384,10 +384,10 @@ void B51_timeseries_each_sendData(uint8_t p_B51_TsC_ID){
   v_iter.asFloat(meter_t::pf)
 
 */
-Serial.print(v_iter.asFloat(meter_t::vol)); Serial.print(",\t");
-		Serial.print(v_iter.asFloat(meter_t::cur) );			Serial.print(",\t");
-		Serial.print(v_iter.asFloat(meter_t::pwr));			Serial.print(",\t");
-		Serial.print(v_iter.asFloat(meter_t::enrg));			Serial.print(",\t");
+Serial.print(v_iter.asFloat(pzmbus::meter_t::vol)); Serial.print(",\t");
+		Serial.print(v_iter.asFloat(pzmbus::meter_t::cur) );			Serial.print(",\t");
+		Serial.print(v_iter.asFloat(pzmbus::meter_t::pwr));			Serial.print(",\t");
+		Serial.print(v_iter.asFloat(pzmbus::meter_t::enrg));			Serial.print(",\t");
 
 /*
 		Serial.print( (v_iter->voltage)); Serial.print(",\t");
