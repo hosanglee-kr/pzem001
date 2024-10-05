@@ -26,8 +26,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
+
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -55,17 +54,40 @@ jobs:
       - name: Run PlatformIO
         env:
           VERSION: "0.0.${{ github.event.number }}"
-        run: platformio run -e ${{ matrix.environments }}
-        #run: pio run
+        run: pio run -e ${{ matrix.environments }}
 
-      - name: Upload Assets
+      - name: Build filesystem image
+        env:
+          VERSION: "0.0.${{ github.event.number }}"
+        run: pio run -e ${{ matrix.environments }} --target buildfs  # LittleFS 파일 시스템 이미지 빌드
+        continue-on-error: true  # 오류가 발생해도 계속 실행
+
+      - name: upload artifact firmware
+        id: upload-firmware
         uses: actions/upload-artifact@v4
         with:
-            name: ${{ matrix.environments }}
-            path: |
-              .pio/build/*/firmware.bin
-              .pio/build/*/partitions.bin
-            #retention-days: 7
+          name: ${{ matrix.environments }}-firmware.bin
+          path: .pio/build/${{ matrix.environments }}/firmware*.bin
 
-
-
+      - name: Upload artifact littlefs
+        id: upload-littlefs
+        if: exists(.pio/build/${{ matrix.environments }}/littlefs.bin)  # 파일 존재 여부 확인
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.environments }}-littlefs.bin  # 아티팩트 이름
+          path: .pio/build/${{ matrix.environments }}/littlefs.bin  # LittleFS 바이너리 파일 경로
+          
+      - name: upload artifact partitions
+        id: upload-partitions
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.environments }}-partitions.bin
+          path: .pio/build/${{ matrix.environments }}/partitions.bin
+          
+      - name: upload artifact bootlooder 
+        id: upload-bootloader
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.environments }}-bootloader.bin
+          path: .pio/build/${{ matrix.environments }}/bootloader.bin
+          
