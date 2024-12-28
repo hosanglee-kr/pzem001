@@ -19,23 +19,23 @@
 
 //#define			B021			//	03_MultiplePZEM004 : Build-Ok
 #ifdef		B021
-	#include "B21_PZEM_edl_DC_Multi_003.h"
+	#include "B020/B21_PZEM_edl_DC_Multi_003.h"
 #endif
 
 //#define			B020			//	03_MultiplePZEM004 : Build-Ok
 #ifdef		B020
-	#include "B20_PZEM_edl_DC_Multi_002.h"
+	#include "B020/B20_PZEM_edl_DC_Multi_002.h"
 #endif
 
 
 //#define			B040			//	B40_PZEM_MixedPool_001
 #ifdef		B040
-	#include "B40_PZEM_MixedPool_001.h"
+	#include "B040/B40_PZEM_MixedPool_001.h"
 #endif
 
 //#define			B050		// 	05_TimeSeries	:  : Build-fail
 #ifdef		B050
-	#include "B50_PZEM_edi_DC_Timeseries_003.h"
+	#include "B051/B50_PZEM_edi_DC_Timeseries_003.h"
 #endif
 
 #define			B051		// 	05_TimeSeries	:  : Build-fail
@@ -49,7 +49,7 @@
 
 //#define			B070		//  PZEM_CLI		:  : Build-fail
 #ifdef		B070
-	#include "B70_PZEM_CLI_002.h"
+	#include "B070/B70_PZEM_CLI_002.h"
 #endif
 
 //#define			C010		//
