@@ -40,8 +40,8 @@ const char* g_B51_NTP_TIMEZONE	 				= "KST-9";
 UartQ*		g_B51_qport;
 
 
-#define 	G_B51_PZEM_MODEL_PZEM003			1
-//#define 	G_B51_PZEM_MODEL_PZEM004V3 			0
+//#define 	G_B51_PZEM_MODEL_PZEM003			1
+#define 	G_B51_PZEM_MODEL_PZEM004V3 			1
 
 #define		G_B51_PZEM_DUMMY					1
 
@@ -384,8 +384,12 @@ void B51_timeseries_each_sendData(uint8_t p_B51_TsC_ID){
   v_iter.asFloat(meter_t::pf)
 
 */
+		#if defined(G_B51_PZEM_MODEL_PZEM004V3)
+		    pz004::metrics m = *v_iter.operator->();
+	    #elif defined(G_B51_PZEM_MODEL_PZEM003)
+		    pz003::metrics m = *v_iter.operator->();
+	    #endif
 		
-		pz003::metrics m = *v_iter.operator->();
 
         Serial.print(m.asFloat(pzmbus::meter_t::vol)); Serial.print(",\t");
 		Serial.print(m.asFloat(pzmbus::meter_t::cur) );			Serial.print(",\t");
