@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-
 #define 	DBG_PROGRESS1
 #define		DBG_ERROR
 
