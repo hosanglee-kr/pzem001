@@ -40,8 +40,8 @@ const char* g_B51_NTP_TIMEZONE	 				= "KST-9";
 UartQ*		g_B51_qport;
 
 
-#define 	G_B51_PZEM_MODEL_PZEM003			1
-//#define 	G_B51_PZEM_MODEL_PZEM004V3 			0
+//#define 	G_B51_PZEM_MODEL_PZEM003			1
+#define 	G_B51_PZEM_MODEL_PZEM004V3 			1
 
 #define		G_B51_PZEM_DUMMY					1
 
